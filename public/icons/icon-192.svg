@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Music Stream">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+  <rect width="192" height="192" rx="42" fill="url(#g)"/>
+  <circle cx="74" cy="123" r="22" fill="white" opacity=".95"/>
+  <circle cx="124" cy="111" r="22" fill="white" opacity=".95"/>
+  <path d="M92 53v70M142 43v68M92 53l50-10" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

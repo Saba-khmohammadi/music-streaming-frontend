@@ -20,7 +20,7 @@ export const users: User[] = [
     followers: 12,
     following: 24,
     dailyStreams: 18,
-    preferences: { notificationLimit: 20, systemSound: 'soft', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 20, systemSound: 'soft', language: 'en', privacyAccepted: true }
   },
   {
     id: 'u-silver',
@@ -36,7 +36,7 @@ export const users: User[] = [
     followers: 41,
     following: 30,
     dailyStreams: 90,
-    preferences: { notificationLimit: 30, systemSound: 'classic', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 30, systemSound: 'classic', language: 'en', privacyAccepted: true }
   },
   {
     id: 'u-gold',
@@ -52,7 +52,7 @@ export const users: User[] = [
     followers: 86,
     following: 55,
     dailyStreams: 140,
-    preferences: { notificationLimit: 50, systemSound: 'soft', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 50, systemSound: 'soft', language: 'en', privacyAccepted: true }
   },
   {
     id: 'u-artist',
@@ -68,7 +68,7 @@ export const users: User[] = [
     dailyStreams: 0,
     verifiedArtist: true,
     artistId: 'artist-1',
-    preferences: { notificationLimit: 25, systemSound: 'soft', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 25, systemSound: 'soft', language: 'en', privacyAccepted: true }
   },
   {
     id: 'u-support',
@@ -82,7 +82,7 @@ export const users: User[] = [
     followers: 0,
     following: 0,
     dailyStreams: 0,
-    preferences: { notificationLimit: 100, systemSound: 'classic', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 100, systemSound: 'classic', language: 'en', privacyAccepted: true }
   },
   {
     id: 'u-admin',
@@ -96,7 +96,7 @@ export const users: User[] = [
     followers: 0,
     following: 0,
     dailyStreams: 0,
-    preferences: { notificationLimit: 100, systemSound: 'classic', language: 'fa', privacyAccepted: true }
+    preferences: { notificationLimit: 100, systemSound: 'classic', language: 'en', privacyAccepted: true }
   }
 ];
 

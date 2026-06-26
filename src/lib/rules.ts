@@ -15,15 +15,15 @@ export const subscriptionLabelsFa: Record<SubscriptionTier, string> = {
 export const roleLabels: Record<UserRole, string> = {
   listener: 'Listener',
   artist: 'Artist',
-  support: 'Support',
-  admin: 'System Admin'
+  support: 'support',
+  admin: 'admin'
 };
 
 export const roleLabelsFa: Record<UserRole, string> = {
   listener: 'شنونده',
   artist: 'هنرمند',
-  support: 'پشتیبان',
-  admin: 'مدیر سیستم'
+  support: 'support',
+  admin: 'admin'
 };
 
 export const playlistLimit = (tier: SubscriptionTier): number => {
@@ -82,7 +82,10 @@ export const navItemsForRole = (role: UserRole, language: UserPreferences['langu
     { href: '/settings', label: label['/settings'] }
   ];
   if (role === 'artist') return [...base, { href: '/artist/manage', label: label['/artist/manage'] }];
-  if (role === 'support' || role === 'admin') return [...base, { href: '/dashboard', label: label['/dashboard'] }];
+  if (role === 'support' || role === 'admin') {
+    const dashboardLabel = role === 'admin' ? 'admin' : 'support';
+    return [...base, { href: '/dashboard', label: dashboardLabel }];
+  }
   return base;
 };
 

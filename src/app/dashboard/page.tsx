@@ -1,139 +1,612 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/context/AuthContext';
-import { canUseAdminPricing, canUseSupportDashboard } from '@/lib/rules';
+import { canUseAdminPricing, canUseSupportDashboard, displayRoleLabel } from '@/lib/rules';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
-import { getCollection, setCollection } from '@/lib/storage';
-import type { Artist, AuditRow, SubscriptionPricing, Ticket, User } from '@/types/domain';
+import { getCollection, newId, setCollection } from '@/lib/storage';
+import type { AppNotification, Artist, AuditRow, SubscriptionPricing, Ticket, UserPreferences } from '@/types/domain';
 
-type Tab = 'verification' | 'tickets' | 'audit' | 'pricing';
+type DashboardSection = 'verification' | 'tickets' | 'audit' | 'pricing';
+type Language = UserPreferences['language'];
+
+const ticketStatusLabels: Record<Language, Record<Ticket['status'], string>> = {
+  fa: {
+    open: 'باز',
+    answered: 'پاسخ داده شده',
+    closed: 'بسته شده'
+  },
+  en: {
+    open: 'Open',
+    answered: 'Answered',
+    closed: 'Closed'
+  }
+};
+
+const paymentStatusLabels: Record<Language, Record<AuditRow['status'], string>> = {
+  fa: {
+    pending: 'در انتظار پرداخت',
+    paid: 'تسویه شده'
+  },
+  en: {
+    pending: 'Pending payment',
+    paid: 'Paid'
+  }
+};
+
+const dashboardText = {
+  fa: {
+    pageTitle: 'داشبورد پشتیبان و مدیر سامانه',
+    currentRole: 'نقش فعلی',
+    unauthorizedTitle: 'دسترسی غیرمجاز',
+    unauthorizedDescription: 'این صفحه فقط برای پشتیبان و مدیر سامانه قابل مشاهده است.',
+    sidebarTitle: 'بخش‌های داشبورد',
+    sidebarDescription: 'از این سایدبار برای جابه‌جایی بین بخش‌های مجاز استفاده کنید.',
+    sections: {
+      verification: {
+        title: 'درخواست‌های تایید هنرمندان',
+        description: 'بررسی نمونه‌کار و تایید یا رد حساب هنرمند'
+      },
+      tickets: {
+        title: 'تیکت‌های پشتیبانی',
+        description: 'مشاهده مکالمه و پاسخ به کاربران'
+      },
+      audit: {
+        title: 'حسابرسی',
+        description: 'محاسبات مالی و تسویه هنرمندان'
+      },
+      pricing: {
+        title: 'اشتراک‌ها و گزارش‌ها',
+        description: 'تغییر قیمت و گزارش درآمدی'
+      }
+    },
+    verification: {
+      intro: 'فقط هنرمندانی که وضعیت «در انتظار تایید» دارند در این جدول نمایش داده می‌شوند.',
+      requestCount: 'درخواست',
+      emptyTitle: 'درخواستی برای بررسی وجود ندارد',
+      artistName: 'نام هنری',
+      email: 'ایمیل',
+      samples: 'نمونه کارها',
+      viewSamples: 'مشاهده نمونه کارها',
+      detailTitle: 'جزئیات درخواست',
+      pending: 'در انتظار تایید',
+      noSamples: 'نمونه کاری ثبت نشده است.',
+      playSample: 'پخش/بررسی نمونه',
+      rejectionReason: 'دلیل رد درخواست',
+      rejectionPlaceholder: 'در صورت رد درخواست، دلیل را اینجا بنویسید.',
+      approve: 'تایید',
+      reject: 'رد درخواست',
+      selectTitle: 'یک درخواست را انتخاب کنید',
+      selectDescription: 'با کلیک روی «مشاهده نمونه کارها»، جزئیات درخواست در این بخش باز می‌شود.'
+    },
+    tickets: {
+      intro: 'جدول شامل شناسه، کاربر، موضوع، تاریخ ارسال و وضعیت تیکت است.',
+      count: 'تیکت',
+      ticketId: 'شناسه تیکت',
+      userName: 'نام کاربر',
+      subject: 'موضوع',
+      sentDate: 'تاریخ ارسال',
+      status: 'وضعیت',
+      chatTitle: 'چت‌باکس پاسخگویی',
+      userPrefix: 'کاربر',
+      support: 'پشتیبان',
+      replyLabel: 'پاسخ پشتیبان',
+      replyPlaceholder: 'پاسخ خود را اینجا تایپ کنید...',
+      sendReply: 'ارسال پاسخ',
+      closeTicket: 'بستن تیکت',
+      emptyTitle: 'تیکتی وجود ندارد'
+    },
+    audit: {
+      title: 'جدول محاسبات مالی ماهانه',
+      intro: 'نمایش حسابرسی هنرمندان، شنوندگان منحصربه‌فرد، استریم‌ها، پاداش و وضعیت پرداخت.',
+      adminOnly: 'ویژه مدیر سامانه',
+      artistInfo: 'نام و شناسه تخصصی هنرمند',
+      month: 'ماه',
+      uniqueListeners: 'شنوندگان منحصربه‌فرد',
+      streams: 'استریم‌های ثبت شده',
+      reward: 'مبلغ پاداش محاسبه شده',
+      paymentStatus: 'وضعیت پرداخت',
+      paymentAction: 'عملیات پرداخت',
+      unknownArtist: 'هنرمند نامشخص',
+      markPaid: 'تایید تسویه حساب'
+    },
+    pricing: {
+      controlTitle: 'پنل کنترل قیمت‌ها',
+      controlDescription: 'مدیر سامانه می‌تواند قیمت اشتراک‌های نقره‌ای و طلایی را بدون تغییر کد بروزرسانی کند.',
+      silverPrice: 'قیمت اشتراک نقره‌ای',
+      goldPrice: 'قیمت اشتراک طلایی',
+      updatePrices: 'بروزرسانی قیمت‌ها',
+      saved: 'قیمت‌ها در سامانه بروزرسانی شد.',
+      reportsTitle: 'نمودارها و گزارش‌های درآمدی',
+      chartLabel: 'نمودار دایره‌ای توزیع کاربران بر اساس اشتراک',
+      base: 'پایه',
+      silver: 'نقره‌ای',
+      gold: 'طلایی',
+      subscriptionRevenue: 'درآمد اشتراک ماه جاری',
+      paidRewards: 'پاداش‌های تسویه شده',
+      pendingRewards: 'پاداش‌های در انتظار پرداخت'
+    },
+    notifications: {
+      approvedTitle: 'درخواست هنرمندی تایید شد',
+      rejectedTitle: 'درخواست هنرمندی رد شد',
+      approvedMessage: (name: string) => `حساب هنرمندی ${name} تایید شد و اکنون امکان مدیریت آثار فعال است.`,
+      rejectedMessage: (name: string, reason: string) => `درخواست هنرمندی ${name} رد شد. دلیل: ${reason || 'دلیل ثبت نشده است.'}`
+    }
+  },
+  en: {
+    pageTitle: 'Support and System Admin Dashboard',
+    currentRole: 'Current role',
+    unauthorizedTitle: 'Unauthorized access',
+    unauthorizedDescription: 'This page is only available to support staff and the system admin.',
+    sidebarTitle: 'Dashboard sections',
+    sidebarDescription: 'Use this sidebar to switch between the sections available to your role.',
+    sections: {
+      verification: {
+        title: 'Artist verification requests',
+        description: 'Review sample works and approve or reject artist accounts'
+      },
+      tickets: {
+        title: 'Support tickets',
+        description: 'View conversations and reply to users'
+      },
+      audit: {
+        title: 'Audit',
+        description: 'Monthly financial calculations and artist payouts'
+      },
+      pricing: {
+        title: 'Subscriptions and reports',
+        description: 'Update prices and view revenue reports'
+      }
+    },
+    verification: {
+      intro: 'Only artists with a pending verification status are shown in this table.',
+      requestCount: 'requests',
+      emptyTitle: 'No requests to review',
+      artistName: 'Artist name',
+      email: 'Email',
+      samples: 'Sample works',
+      viewSamples: 'View sample works',
+      detailTitle: 'Request details',
+      pending: 'Pending approval',
+      noSamples: 'No sample works have been submitted.',
+      playSample: 'Play/review sample',
+      rejectionReason: 'Rejection reason',
+      rejectionPlaceholder: 'If rejecting the request, write the reason here.',
+      approve: 'Approve',
+      reject: 'Reject request',
+      selectTitle: 'Select a request',
+      selectDescription: 'Click “View sample works” to open the request details here.'
+    },
+    tickets: {
+      intro: 'The table includes ticket ID, user, subject, sent date, and ticket status.',
+      count: 'tickets',
+      ticketId: 'Ticket ID',
+      userName: 'User name',
+      subject: 'Subject',
+      sentDate: 'Sent date',
+      status: 'Status',
+      chatTitle: 'Reply chatbox',
+      userPrefix: 'User',
+      support: 'Support',
+      replyLabel: 'Support reply',
+      replyPlaceholder: 'Type your reply here...',
+      sendReply: 'Send reply',
+      closeTicket: 'Close ticket',
+      emptyTitle: 'No tickets found'
+    },
+    audit: {
+      title: 'Monthly financial calculation table',
+      intro: 'Shows artist audit data, unique listeners, streams, calculated reward, and payment status.',
+      adminOnly: 'System admin only',
+      artistInfo: 'Artist name and specialist ID',
+      month: 'Month',
+      uniqueListeners: 'Unique listeners',
+      streams: 'Registered streams',
+      reward: 'Calculated reward',
+      paymentStatus: 'Payment status',
+      paymentAction: 'Payment action',
+      unknownArtist: 'Unknown artist',
+      markPaid: 'Confirm settlement'
+    },
+    pricing: {
+      controlTitle: 'Price control panel',
+      controlDescription: 'The system admin can update Silver and Gold subscription prices without changing the code.',
+      silverPrice: 'Silver subscription price',
+      goldPrice: 'Gold subscription price',
+      updatePrices: 'Update prices',
+      saved: 'Prices were updated in the system.',
+      reportsTitle: 'Charts and revenue reports',
+      chartLabel: 'Pie chart showing user distribution by subscription tier',
+      base: 'Base',
+      silver: 'Silver',
+      gold: 'Gold',
+      subscriptionRevenue: 'Current month subscription revenue',
+      paidRewards: 'Paid rewards',
+      pendingRewards: 'Pending rewards'
+    },
+    notifications: {
+      approvedTitle: 'Artist request approved',
+      rejectedTitle: 'Artist request rejected',
+      approvedMessage: (name: string) => `The artist account for ${name} has been approved and work management is now enabled.`,
+      rejectedMessage: (name: string, reason: string) => `The artist request for ${name} was rejected. Reason: ${reason || 'No reason was provided.'}`
+    }
+  }
+} satisfies Record<Language, unknown>;
 
 export default function DashboardPage() {
-  const { currentUser, refreshUsers } = useAuth();
-  const [tab, setTab] = useState<Tab>('verification');
+  const { currentUser, users, refreshUsers } = useAuth();
+  const [activeSection, setActiveSection] = useState<DashboardSection>('verification');
   const [artists, setArtists] = useState<Artist[]>(getCollection('artists'));
   const [tickets, setTickets] = useState<Ticket[]>(getCollection('tickets'));
-  const [auditRows, setAuditRows] = useState<AuditRow[]>(getCollection('auditRows'));
+  const [auditRows] = useState<AuditRow[]>(getCollection('auditRows'));
   const [pricing, setPricing] = useState<SubscriptionPricing>(getCollection('pricing'));
-  const users = getCollection('users') as User[];
+  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [ticketReplies, setTicketReplies] = useState<Record<string, string>>({});
+  const [pricingSaved, setPricingSaved] = useState(false);
+
+  const language = currentUser?.preferences.language ?? 'en';
+  const t = dashboardText[language];
+  const ticketStatusLabel = ticketStatusLabels[language];
+  const paymentStatusLabel = paymentStatusLabels[language];
+  const isAdmin = currentUser ? canUseAdminPricing(currentUser.role) : false;
+  const dashboardTitle = currentUser?.role === 'admin' ? 'admin' : 'support';
+
+  const availableSections = useMemo(
+    () => [
+      { id: 'verification' as const, title: t.sections.verification.title },
+      { id: 'tickets' as const, title: t.sections.tickets.title },
+      { id: 'audit' as const, title: t.sections.audit.title },
+      ...(isAdmin ? [{ id: 'pricing' as const, title: t.sections.pricing.title }] : [])
+    ],
+    [isAdmin, t]
+  );
 
   if (!currentUser) return <AppShell><div /></AppShell>;
   if (!canUseSupportDashboard(currentUser.role)) {
-    return <AppShell><PageHeader title="Dashboard" /><EmptyState title="Access denied" description="This page is for support users and the system admin." /></AppShell>;
+    return <AppShell><PageHeader title={dashboardTitle} /><EmptyState title={t.unauthorizedTitle} description={t.unauthorizedDescription} /></AppShell>;
   }
 
-  const persistArtists = (next: Artist[]) => { setArtists(next); setCollection('artists', next); };
-  const persistTickets = (next: Ticket[]) => { setTickets(next); setCollection('tickets', next); };
-  const persistAudit = (next: AuditRow[]) => { setAuditRows(next); setCollection('auditRows', next); };
+  const safeSection = availableSections.some((section) => section.id === activeSection) ? activeSection : 'verification';
+  const pendingArtists = artists.filter((artist) => artist.status === 'pending');
+  const selectedArtist = artists.find((artist) => artist.id === selectedArtistId) ?? pendingArtists[0];
+  const selectedTicket = tickets.find((ticket) => ticket.id === selectedTicketId) ?? tickets[0];
+  const persistArtists = (next: Artist[]) => {
+    setArtists(next);
+    setCollection('artists', next);
+  };
+
+  const persistTickets = (next: Ticket[]) => {
+    setTickets(next);
+    setCollection('tickets', next);
+  };
+
+  const pushArtistNotification = (artist: Artist, approved: boolean, reason?: string) => {
+    const owner = users.find((user) => user.artistId === artist.id);
+    const ownerLanguage = owner?.preferences.language ?? language;
+    const notificationText = dashboardText[ownerLanguage].notifications;
+    const notifications = getCollection('notifications') as AppNotification[];
+    const nextNotification: AppNotification = {
+      id: newId('notif'),
+      role: 'artist',
+      userId: owner?.id,
+      title: approved ? notificationText.approvedTitle : notificationText.rejectedTitle,
+      message: approved ? notificationText.approvedMessage(artist.name) : notificationText.rejectedMessage(artist.name, reason ?? ''),
+      link: approved ? '/artist/manage' : '/notifications',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    setCollection('notifications', [nextNotification, ...notifications]);
+  };
 
   const approveArtist = (artistId: string) => {
-    persistArtists(artists.map((artist) => artist.id === artistId ? { ...artist, status: 'approved', verified: true, rejectionReason: undefined } : artist));
-    const nextUsers = users.map((user) => user.artistId === artistId ? { ...user, verifiedArtist: true } : user);
-    setCollection('users', nextUsers);
+    const artist = artists.find((item) => item.id === artistId);
+    if (!artist) return;
+    persistArtists(artists.map((item) => item.id === artistId ? { ...item, status: 'approved', verified: true, rejectionReason: undefined } : item));
+    setCollection('users', users.map((user) => user.artistId === artistId ? { ...user, verifiedArtist: true } : user));
+    pushArtistNotification(artist, true);
+    setSelectedArtistId(null);
+    setRejectionReason('');
     refreshUsers();
   };
 
   const rejectArtist = (artistId: string) => {
-    const reason = window.prompt('Enter rejection reason:', 'The sample work quality is not sufficient for approval.');
-    persistArtists(artists.map((artist) => artist.id === artistId ? { ...artist, status: 'rejected', verified: false, rejectionReason: reason || undefined } : artist));
+    const reason = rejectionReason.trim();
+    if (!reason) return;
+    const artist = artists.find((item) => item.id === artistId);
+    if (!artist) return;
+    persistArtists(artists.map((item) => item.id === artistId ? { ...item, status: 'rejected', verified: false, rejectionReason: reason } : item));
+    pushArtistNotification(artist, false, reason);
+    setSelectedArtistId(null);
+    setRejectionReason('');
   };
 
   const answerTicket = (ticketId: string) => {
-    const body = window.prompt('Support reply:');
+    const body = ticketReplies[ticketId]?.trim();
     if (!body) return;
-    persistTickets(tickets.map((ticket) => ticket.id === ticketId ? { ...ticket, status: 'answered', messages: [...ticket.messages, { from: 'support', body, createdAt: new Date().toISOString() }] } : ticket));
+    persistTickets(tickets.map((ticket) => ticket.id === ticketId ? {
+      ...ticket,
+      status: 'answered',
+      messages: [...ticket.messages, { from: 'support', body, createdAt: new Date().toISOString() }]
+    } : ticket));
+    setTicketReplies((current) => ({ ...current, [ticketId]: '' }));
   };
 
-  const closeTicket = (ticketId: string) => persistTickets(tickets.map((ticket) => ticket.id === ticketId ? { ...ticket, status: 'closed' } : ticket));
-
-  const markPaid = (rowId: string) => {
-    if (!canUseAdminPricing(currentUser.role)) return;
-    persistAudit(auditRows.map((row) => row.id === rowId ? { ...row, status: 'paid' } : row));
+  const closeTicket = (ticketId: string) => {
+    persistTickets(tickets.map((ticket) => ticket.id === ticketId ? { ...ticket, status: 'closed' } : ticket));
   };
 
   const savePricing = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canUseAdminPricing(currentUser.role)) return;
+    if (!isAdmin) return;
     const form = new FormData(event.currentTarget);
-    const next = { silver: Number(form.get('silver')), gold: Number(form.get('gold')) };
+    const next: SubscriptionPricing = {
+      silver: Math.max(0, Number(form.get('silver'))),
+      gold: Math.max(0, Number(form.get('gold')))
+    };
     setPricing(next);
     setCollection('pricing', next);
+    setPricingSaved(true);
   };
 
-  const pendingArtists = artists.filter((artist) => artist.status === 'pending');
   const goldCount = users.filter((user) => user.subscription === 'gold').length;
   const silverCount = users.filter((user) => user.subscription === 'silver').length;
   const baseCount = users.filter((user) => user.subscription === 'base').length;
+  const totalSubscriptions = Math.max(baseCount + silverCount + goldCount, 1);
+  const baseDeg = (baseCount / totalSubscriptions) * 360;
+  const silverDeg = baseDeg + (silverCount / totalSubscriptions) * 360;
+  const subscriptionRevenue = (silverCount * pricing.silver) + (goldCount * pricing.gold);
+  const paidRewards = auditRows.filter((row) => row.status === 'paid').reduce((sum, row) => sum + row.reward, 0);
+  const pendingRewards = auditRows.filter((row) => row.status === 'pending').reduce((sum, row) => sum + row.reward, 0);
 
   return (
     <AppShell>
-      <PageHeader title="Support and Admin Dashboard" description="Management panel with different access levels: support handles tickets and artist verification; admin handles audits, pricing, and reports." />
-      <div className="tabs">
-        <button className={`tab ${tab === 'verification' ? 'active' : ''}`} onClick={() => setTab('verification')}>Tickets and Verification</button>
-        <button className={`tab ${tab === 'tickets' ? 'active' : ''}`} onClick={() => setTab('tickets')}>Support Tickets</button>
-        <button className={`tab ${tab === 'audit' ? 'active' : ''}`} onClick={() => setTab('audit')}>Audit</button>
-        <button className={`tab ${tab === 'pricing' ? 'active' : ''}`} onClick={() => setTab('pricing')}>Subscriptions and Reports</button>
-      </div>
+      <PageHeader
+        title={dashboardTitle}
+        actions={<span className="badge">{t.currentRole}: {displayRoleLabel(currentUser.role, language)}</span>}
+      />
 
-      {tab === 'verification' ? (
-        <section className="card">
-          <h2>Artist Verification Requests</h2>
-          {!pendingArtists.length ? <EmptyState title="No requests to review" /> : (
-            <div className="table-wrap"><table><thead><tr><th>Stage name</th><th>Email</th><th>Sample works</th><th>Actions</th></tr></thead><tbody>{pendingArtists.map((artist) => (
-              <tr key={artist.id}><td>{artist.name}</td><td>{artist.email}</td><td>{artist.sampleWorks.join(', ') || '—'}</td><td><button className="btn secondary" onClick={() => approveArtist(artist.id)}>Approve</button> <button className="btn danger" onClick={() => rejectArtist(artist.id)}>Reject</button></td></tr>
-            ))}</tbody></table></div>
-          )}
-        </section>
-      ) : null}
+      <div className="dashboard-shell">
+        <aside className="dashboard-sidebar card">
+          <strong>{t.sidebarTitle}</strong>
+          <div className="dashboard-menu">
+            {availableSections.map((section) => (
+              <button
+                key={section.id}
+                className={`dashboard-menu-item ${safeSection === section.id ? 'active' : ''}`}
+                type="button"
+                onClick={() => setActiveSection(section.id)}
+              >
+                <span>{section.title}</span>
+              </button>
+            ))}
+          </div>
+        </aside>
 
-      {tab === 'tickets' ? (
-        <section className="card">
-          <h2>Support Tickets</h2>
-          <div className="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Submitted at</th><th>Status</th><th>Conversation and actions</th></tr></thead><tbody>{tickets.map((ticket) => (
-            <tr key={ticket.id}>
-              <td>{ticket.id}</td><td>{ticket.userName}</td><td>{ticket.subject}</td><td>{formatDate(ticket.createdAt)}</td><td><span className="badge">{ticket.status}</span></td>
-              <td><details><summary className="btn ghost">View conversation</summary><div className="grid" style={{ marginTop: 12 }}>{ticket.messages.map((message, index) => <div className="card" key={index}><strong>{message.from === 'user' ? 'User' : 'Support'}</strong><p>{message.body}</p></div>)}</div></details><button className="btn secondary" onClick={() => answerTicket(ticket.id)}>Send reply</button> <button className="btn danger" onClick={() => closeTicket(ticket.id)}>Close</button></td>
-            </tr>
-          ))}</tbody></table></div>
-        </section>
-      ) : null}
+        <main className="dashboard-content">
+          {safeSection === 'verification' ? (
+            <div className="grid cols-2">
+              <section className="card">
+                <div className="section-title" style={{ marginTop: 0 }}>
+                  <div>
+                    <h2>{t.sections.verification.title}</h2>
+                  </div>
+                  <span className="badge warning">{formatNumber(pendingArtists.length)} {t.verification.requestCount}</span>
+                </div>
 
-      {tab === 'audit' ? (
-        <section className="card">
-          <h2>Monthly Financial Calculations</h2>
-          <div className="table-wrap"><table><thead><tr><th>Artist</th><th>Month</th><th>Unique listeners</th><th>Streams</th><th>Reward</th><th>Status</th><th>Payment action</th></tr></thead><tbody>{auditRows.map((row) => {
-            const artist = artists.find((item) => item.id === row.artistId);
-            return <tr key={row.id}><td>{artist?.name ?? row.artistId}</td><td>{row.month}</td><td>{formatNumber(row.uniqueListeners)}</td><td>{formatNumber(row.streams)}</td><td>{formatCurrency(row.reward)}</td><td><span className={`badge ${row.status === 'paid' ? 'success' : 'warning'}`}>{row.status === 'paid' ? 'Paid' : 'Pending payment'}</span></td><td><button className="btn secondary" disabled={!canUseAdminPricing(currentUser.role) || row.status === 'paid'} onClick={() => markPaid(row.id)}>Confirm payout</button></td></tr>;
-          })}</tbody></table></div>
-        </section>
-      ) : null}
+                {!pendingArtists.length ? <EmptyState title={t.verification.emptyTitle} /> : (
+                  <div className="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>{t.verification.artistName}</th>
+                          <th>{t.verification.email}</th>
+                          <th>{t.verification.samples}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingArtists.map((artist) => (
+                          <tr key={artist.id}>
+                            <td>{artist.name}</td>
+                            <td>{artist.email}</td>
+                            <td><button className="btn secondary" type="button" onClick={() => setSelectedArtistId(artist.id)}>{t.verification.viewSamples}</button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
 
-      {tab === 'pricing' ? (
-        <div className="grid cols-2">
-          <section className="card">
-            <h2>Pricing Control Panel</h2>
-            {!canUseAdminPricing(currentUser.role) ? <p className="muted">Only the system admin can change pricing.</p> : null}
-            <form className="form" onSubmit={savePricing}>
-              <div className="form-row"><label className="label">Silver subscription price</label><input className="input" name="silver" type="number" defaultValue={pricing.silver} disabled={!canUseAdminPricing(currentUser.role)} /></div>
-              <div className="form-row"><label className="label">Gold subscription price</label><input className="input" name="gold" type="number" defaultValue={pricing.gold} disabled={!canUseAdminPricing(currentUser.role)} /></div>
-              <button className="btn primary" disabled={!canUseAdminPricing(currentUser.role)}>Update prices</button>
-            </form>
-          </section>
-          <section className="card highlight">
-            <h2>User Distribution Report</h2>
-            <div className="stats" style={{ gridTemplateColumns: '1fr' }}>
-              <div className="stat"><strong>{formatNumber(baseCount)}</strong><span className="muted">Base subscription</span></div>
-              <div className="stat"><strong>{formatNumber(silverCount)}</strong><span className="muted">Silver subscription</span></div>
-              <div className="stat"><strong>{formatNumber(goldCount)}</strong><span className="muted">Gold subscription</span></div>
+              <section className="card highlight">
+                <h2>{t.verification.detailTitle}</h2>
+                {selectedArtist && selectedArtist.status === 'pending' ? (
+                  <div className="detail-panel">
+                    <div>
+                      <span className="badge warning">{t.verification.pending}</span>
+                      <h3>{selectedArtist.name}</h3>
+                      <p className="muted">{selectedArtist.email}</p>
+                      <p>{selectedArtist.bio}</p>
+                    </div>
+                    <div className="sample-list">
+                      {selectedArtist.sampleWorks.length ? selectedArtist.sampleWorks.map((sample) => (
+                        <div className="sample-item" key={sample}>
+                          <span>{sample}</span>
+                          <button className="btn ghost" type="button">{t.verification.playSample}</button>
+                        </div>
+                      )) : <p className="muted">{t.verification.noSamples}</p>}
+                    </div>
+                    <div className="form-row">
+                      <label className="label">{t.verification.rejectionReason}</label>
+                      <textarea className="textarea" value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t.verification.rejectionPlaceholder} />
+                    </div>
+                    <div className="notification-actions">
+                      <button className="btn primary" type="button" onClick={() => approveArtist(selectedArtist.id)}>{t.verification.approve}</button>
+                      <button className="btn danger" type="button" disabled={!rejectionReason.trim()} onClick={() => rejectArtist(selectedArtist.id)}>{t.verification.reject}</button>
+                    </div>
+                  </div>
+                ) : <EmptyState title={t.verification.selectTitle} description={t.verification.selectDescription} />}
+              </section>
             </div>
-            <p className="muted">In Phase 2, this section can be powered by aggregated backend APIs.</p>
-          </section>
-        </div>
-      ) : null}
+          ) : null}
+
+          {safeSection === 'tickets' ? (
+            <div className="grid cols-2">
+              <section className="card">
+                <div className="section-title" style={{ marginTop: 0 }}>
+                  <div>
+                    <h2>{t.sections.tickets.title}</h2>
+                  </div>
+                  <span className="badge">{formatNumber(tickets.length)} {t.tickets.count}</span>
+                </div>
+
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{t.tickets.ticketId}</th>
+                        <th>{t.tickets.userName}</th>
+                        <th>{t.tickets.subject}</th>
+                        <th>{t.tickets.sentDate}</th>
+                        <th>{t.tickets.status}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tickets.map((ticket) => (
+                        <tr className="clickable-row" key={ticket.id} onClick={() => setSelectedTicketId(ticket.id)}>
+                          <td>{ticket.id}</td>
+                          <td>{ticket.userName}</td>
+                          <td>{ticket.subject}</td>
+                          <td>{formatDate(ticket.createdAt)}</td>
+                          <td><span className={`badge ${ticket.status === 'closed' ? 'success' : ticket.status === 'open' ? 'warning' : ''}`}>{ticketStatusLabel[ticket.status]}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="card highlight">
+                <h2>{t.tickets.chatTitle}</h2>
+                {selectedTicket ? (
+                  <div className="chatbox">
+                    <div>
+                      <span className="badge">{selectedTicket.id}</span>
+                      <h3>{selectedTicket.subject}</h3>
+                      <p className="muted">{t.tickets.userPrefix}: {selectedTicket.userName} · {t.tickets.status}: {ticketStatusLabel[selectedTicket.status]}</p>
+                    </div>
+                    <div className="chat-messages">
+                      {selectedTicket.messages.map((message, index) => (
+                        <div className={`chat-message ${message.from === 'support' ? 'support' : 'user'}`} key={`${message.createdAt}-${index}`}>
+                          <strong>{message.from === 'support' ? t.tickets.support : selectedTicket.userName}</strong>
+                          <p>{message.body}</p>
+                          <small>{formatDate(message.createdAt)}</small>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="form-row">
+                      <label className="label">{t.tickets.replyLabel}</label>
+                      <textarea
+                        className="textarea"
+                        value={ticketReplies[selectedTicket.id] ?? ''}
+                        onChange={(event) => setTicketReplies((current) => ({ ...current, [selectedTicket.id]: event.target.value }))}
+                        placeholder={t.tickets.replyPlaceholder}
+                        disabled={selectedTicket.status === 'closed'}
+                      />
+                    </div>
+                    <div className="notification-actions">
+                      <button className="btn primary" type="button" disabled={selectedTicket.status === 'closed' || !(ticketReplies[selectedTicket.id] ?? '').trim()} onClick={() => answerTicket(selectedTicket.id)}>{t.tickets.sendReply}</button>
+                      <button className="btn danger" type="button" disabled={selectedTicket.status === 'closed'} onClick={() => closeTicket(selectedTicket.id)}>{t.tickets.closeTicket}</button>
+                    </div>
+                  </div>
+                ) : <EmptyState title={t.tickets.emptyTitle} />}
+              </section>
+            </div>
+          ) : null}
+
+          {safeSection === 'audit' ? (
+            <section className="card">
+              <div className="section-title" style={{ marginTop: 0 }}>
+                <div>
+                  <h2>{t.audit.title}</h2>
+                </div>
+              </div>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{t.audit.artistInfo}</th>
+                      <th>{t.audit.uniqueListeners}</th>
+                      <th>{t.audit.streams}</th>
+                      <th>{t.audit.reward}</th>
+                      <th>{t.audit.paymentStatus}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditRows.map((row) => {
+                      const artist = artists.find((item) => item.id === row.artistId);
+                      return (
+                        <tr key={row.id}>
+                          <td><strong>{artist?.name ?? t.audit.unknownArtist}</strong><br /><small className="muted">{row.artistId}</small></td>
+                          <td>{formatNumber(row.uniqueListeners)}</td>
+                          <td>{formatNumber(row.streams)}</td>
+                          <td>{formatCurrency(row.reward)}</td>
+                          <td><span className={`badge ${row.status === 'paid' ? 'success' : 'warning'}`}>{paymentStatusLabel[row.status]}</span></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : null}
+
+          {safeSection === 'pricing' && isAdmin ? (
+            <div className="grid cols-2">
+              <section className="card">
+                <h2>{t.pricing.controlTitle}</h2>
+                <form className="form" onSubmit={savePricing}>
+                  <div className="form-row">
+                    <label className="label">{t.pricing.silverPrice}</label>
+                    <input className="input" name="silver" type="number" min="0" defaultValue={pricing.silver} />
+                  </div>
+                  <div className="form-row">
+                    <label className="label">{t.pricing.goldPrice}</label>
+                    <input className="input" name="gold" type="number" min="0" defaultValue={pricing.gold} />
+                  </div>
+                  <button className="btn primary" type="submit">{t.pricing.updatePrices}</button>
+                  {pricingSaved ? <span className="badge success">{t.pricing.saved}</span> : null}
+                </form>
+              </section>
+
+              <section className="card highlight">
+                <h2>{t.pricing.reportsTitle}</h2>
+                <div className="subscription-chart-wrap">
+                  <div
+                    className="subscription-pie"
+                    aria-label={t.pricing.chartLabel}
+                    style={{ background: `conic-gradient(var(--primary-2) 0deg ${baseDeg}deg, var(--subtle) ${baseDeg}deg ${silverDeg}deg, var(--warning) ${silverDeg}deg 360deg)` }}
+                  />
+                  <div className="chart-legend">
+                    <span><i className="legend-dot base" /> {t.pricing.base}: {formatNumber(baseCount)}</span>
+                    <span><i className="legend-dot silver" /> {t.pricing.silver}: {formatNumber(silverCount)}</span>
+                    <span><i className="legend-dot gold" /> {t.pricing.gold}: {formatNumber(goldCount)}</span>
+                  </div>
+                </div>
+                <div className="stats dashboard-stats">
+                  <div className="stat"><strong>{formatCurrency(subscriptionRevenue)}</strong><span className="muted">{t.pricing.subscriptionRevenue}</span></div>
+                  <div className="stat"><strong>{formatCurrency(paidRewards)}</strong><span className="muted">{t.pricing.paidRewards}</span></div>
+                  <div className="stat"><strong>{formatCurrency(pendingRewards)}</strong><span className="muted">{t.pricing.pendingRewards}</span></div>
+                </div>
+              </section>
+            </div>
+          ) : null}
+        </main>
+      </div>
     </AppShell>
   );
 }

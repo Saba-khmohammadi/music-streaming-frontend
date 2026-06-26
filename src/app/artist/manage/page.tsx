@@ -6,7 +6,7 @@ import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
 import TrackCard from '@/components/TrackCard';
 import { useAuth } from '@/context/AuthContext';
-import { canManageWorks } from '@/lib/rules';
+import { canManageWorks, canSeeAnalytics } from '@/lib/rules';
 import { getCollection, newId, setCollection } from '@/lib/storage';
 import { formatCurrency, formatNumber } from '@/lib/format';
 import type { Album, Artist, Track } from '@/types/domain';
@@ -22,6 +22,7 @@ export default function ArtistManagePage() {
   const totalStreams = artistTracks.reduce((sum, track) => sum + track.streams, 0);
   const totalListeners = artistTracks.reduce((sum, track) => sum + track.listeners, 0);
   const mockIncome = totalStreams * 900;
+  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
 
   if (!currentUser) return <AppShell><div /></AppShell>;
   if (!canManageWorks(currentUser)) {
@@ -92,9 +93,9 @@ export default function ArtistManagePage() {
       <PageHeader title="Artist Work Management" description="Dedicated panel for publishing albums or singles, adding lyrics, metadata, cover art, and viewing stats for each release." />
       <section className="stats">
         <div className="stat"><strong>{formatNumber(artistTracks.length)}</strong><span className="muted">Total works</span></div>
-        <div className="stat"><strong>{formatNumber(totalListeners)}</strong><span className="muted">Total listeners</span></div>
-        <div className="stat"><strong>{formatNumber(totalStreams)}</strong><span className="muted">Total streams</span></div>
-        <div className="stat"><strong>{formatCurrency(mockIncome)}</strong><span className="muted">Estimated income</span></div>
+        <div className="stat"><strong>{showAnalytics ? formatNumber(totalListeners) : 'Gold only'}</strong><span className="muted">Total listeners</span></div>
+        <div className="stat"><strong>{showAnalytics ? formatNumber(totalStreams) : 'Gold only'}</strong><span className="muted">Total streams</span></div>
+        <div className="stat"><strong>{showAnalytics ? formatCurrency(mockIncome) : 'Gold only'}</strong><span className="muted">Estimated income</span></div>
       </section>
 
       <section className="card" style={{ marginTop: 22 }}>

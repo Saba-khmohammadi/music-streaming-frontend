@@ -53,12 +53,28 @@ function LoginContent() {
 
   const handleArtist = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError('');
     const form = new FormData(event.currentTarget);
+    const uploadedSamples = form
+      .getAll('sampleFiles')
+      .filter((item): item is File => item instanceof File && Boolean(item.name))
+      .map((file) => file.name);
+    const typedSamples = String(form.get('sampleWorks'))
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const sampleWorks = [...uploadedSamples, ...typedSamples];
+
+    if (!sampleWorks.length) {
+      setError('Artist signup requires at least one MP3 sample file or one sample link/name.');
+      return;
+    }
+
     registerArtist({
       email: String(form.get('email')),
       password: String(form.get('password')),
       artistName: String(form.get('artistName')),
-      sampleWorks: String(form.get('sampleWorks'))
+      sampleWorks
     });
     router.push('/home');
   };
@@ -125,7 +141,12 @@ function LoginContent() {
               <div className="form-row"><label className="label">Stage name</label><input className="input" name="artistName" required /></div>
               <div className="form-row"><label className="label">Email</label><input className="input" name="email" type="email" required /></div>
               <div className="form-row"><label className="label">Password</label><input className="input" name="password" type="password" required /></div>
-              <div className="form-row"><label className="label">Sample works</label><textarea className="textarea" name="sampleWorks" placeholder="Separate sample file names or links with commas" required /></div>
+              <div className="form-row">
+                <label className="label">Sample MP3 file</label>
+                <input className="input" name="sampleFiles" type="file" accept=".mp3,audio/mpeg" multiple />
+                <small className="muted">Choose one or more MP3 samples from your computer. The mock frontend stores the selected file names.</small>
+              </div>
+              <div className="form-row"><label className="label">Extra sample links or names</label><textarea className="textarea" name="sampleWorks" placeholder="Optional: separate extra sample file names or links with commas" /></div>
               <button className="btn primary block">Submit artist account request</button>
               <p className="muted">After submission, the account will be marked as pending approval.</p>
             </form>

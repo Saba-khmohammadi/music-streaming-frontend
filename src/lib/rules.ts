@@ -1,4 +1,4 @@
-import type { SubscriptionTier, User, UserRole } from '@/types/domain';
+import type { SubscriptionTier, User, UserPreferences, UserRole } from '@/types/domain';
 
 export const subscriptionLabels: Record<SubscriptionTier, string> = {
   base: 'Base',
@@ -6,11 +6,24 @@ export const subscriptionLabels: Record<SubscriptionTier, string> = {
   gold: 'Gold'
 };
 
+export const subscriptionLabelsFa: Record<SubscriptionTier, string> = {
+  base: 'عادی',
+  silver: 'نقره‌ای',
+  gold: 'طلایی'
+};
+
 export const roleLabels: Record<UserRole, string> = {
   listener: 'Listener',
   artist: 'Artist',
   support: 'Support',
   admin: 'System Admin'
+};
+
+export const roleLabelsFa: Record<UserRole, string> = {
+  listener: 'شنونده',
+  artist: 'هنرمند',
+  support: 'پشتیبان',
+  admin: 'مدیر سیستم'
 };
 
 export const playlistLimit = (tier: SubscriptionTier): number => {
@@ -35,19 +48,49 @@ export const canUseAdminPricing = (role: UserRole) => role === 'admin';
 
 export const canUseSupportDashboard = (role: UserRole) => role === 'support' || role === 'admin';
 
-export const navItemsForRole = (role: UserRole) => {
+const navLabels: Record<UserPreferences['language'], Record<string, string>> = {
+  en: {
+    '/home': 'Home',
+    '/library': 'Albums and Singles',
+    '/playlists': 'Playlists',
+    '/notifications': 'Notifications',
+    '/profile': 'User Profile',
+    '/settings': 'Settings',
+    '/artist/manage': 'Work Management',
+    '/dashboard': 'Support/Admin Dashboard'
+  },
+  fa: {
+    '/home': 'خانه',
+    '/library': 'آلبوم‌ها و تک‌آهنگ‌ها',
+    '/playlists': 'پلی‌لیست‌ها',
+    '/notifications': 'اعلان‌ها',
+    '/profile': 'پروفایل کاربر',
+    '/settings': 'تنظیمات',
+    '/artist/manage': 'مدیریت آثار',
+    '/dashboard': 'داشبورد پشتیبانی/مدیر'
+  }
+};
+
+export const navItemsForRole = (role: UserRole, language: UserPreferences['language'] = 'en') => {
+  const label = navLabels[language] ?? navLabels.en;
   const base = [
-    { href: '/home', label: 'Home' },
-    { href: '/library', label: 'Albums and Singles' },
-    { href: '/playlists', label: 'Playlists' },
-    { href: '/notifications', label: 'Notifications' },
-    { href: '/profile', label: 'User Profile' },
-    { href: '/settings', label: 'Settings' }
+    { href: '/home', label: label['/home'] },
+    { href: '/library', label: label['/library'] },
+    { href: '/playlists', label: label['/playlists'] },
+    { href: '/notifications', label: label['/notifications'] },
+    { href: '/profile', label: label['/profile'] },
+    { href: '/settings', label: label['/settings'] }
   ];
-  if (role === 'artist') return [...base, { href: '/artist/manage', label: 'Work Management' }];
-  if (role === 'support' || role === 'admin') return [...base, { href: '/dashboard', label: 'Support/Admin Dashboard' }];
+  if (role === 'artist') return [...base, { href: '/artist/manage', label: label['/artist/manage'] }];
+  if (role === 'support' || role === 'admin') return [...base, { href: '/dashboard', label: label['/dashboard'] }];
   return base;
 };
+
+export const displayRoleLabel = (role: UserRole, language: UserPreferences['language']) =>
+  language === 'fa' ? roleLabelsFa[role] : roleLabels[role];
+
+export const displaySubscriptionLabel = (tier: SubscriptionTier, language: UserPreferences['language']) =>
+  language === 'fa' ? subscriptionLabelsFa[tier] : subscriptionLabels[tier];
 
 export const calculateArtistReward = (uniqueListeners: number, streams: number) => {
   const listenerWeight = uniqueListeners * 4500;

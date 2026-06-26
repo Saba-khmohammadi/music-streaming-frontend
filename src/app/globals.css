@@ -174,3 +174,14 @@ tr:last-child td { border-bottom: 0; }
   .player-track img { width: 52px; height: 52px; }
   .player-side { display: none; }
 }
+
+html[dir="rtl"] { direction: rtl; }
+html[dir="ltr"] { direction: ltr; }
+html[dir="rtl"] body { font-family: Tahoma, Arial, Helvetica, sans-serif; }
+html[dir="rtl"] th, html[dir="rtl"] td { text-align: right; }
+html[dir="rtl"] .sidebar { border-right: 0; border-left: 1px solid var(--border); }
+html[dir="rtl"] .player { direction: ltr; }
+
+.nav-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.notif-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, .16); flex: 0 0 auto; }
+.avatar-preview { width: 120px; height: 120px; border-radius: 30px; object-fit: cover; border: 2px solid rgba(255,255,255,.16); }

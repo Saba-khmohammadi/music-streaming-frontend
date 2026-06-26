@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import Modal from '@/components/Modal';
 import PageHeader from '@/components/PageHeader';
@@ -11,19 +11,52 @@ import { formatNumber } from '@/lib/format';
 export default function ProfilePage() {
   const { currentUser, updateCurrentUser } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
-  const [followed, setFollowed] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarError, setAvatarError] = useState('');
 
   if (!currentUser) return <AppShell><div /></AppShell>;
+
+  const profileImageAllowed = canUploadProfileImage(currentUser.subscription);
+
+  const handleAvatarFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setAvatarError('');
+    setAvatarPreview('');
+    if (!file) return;
+
+    if (!profileImageAllowed) {
+      event.target.value = '';
+      setAvatarError('Base users cannot change their profile image. Upgrade to Silver or Gold first.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      event.target.value = '';
+      setAvatarError('Please choose a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(String(reader.result));
+    reader.onerror = () => setAvatarError('The selected image could not be read.');
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    if (!profileImageAllowed && avatarPreview) {
+      setAvatarError('Base users cannot change their profile image.');
+      return;
+    }
     updateCurrentUser({
       displayName: String(form.get('displayName')),
       birthDate: String(form.get('birthDate')),
       gender: String(form.get('gender')),
-      avatarUrl: canUploadProfileImage(currentUser.subscription) ? String(form.get('avatarUrl')) || currentUser.avatarUrl : currentUser.avatarUrl
+      avatarUrl: profileImageAllowed && avatarPreview ? avatarPreview : currentUser.avatarUrl
     });
+    setAvatarPreview('');
+    setAvatarError('');
     setEditOpen(false);
   };
 
@@ -43,26 +76,25 @@ export default function ProfilePage() {
         </div>
         <div style={{ display: 'grid', gap: 10 }}>
           <button className="btn primary" onClick={() => setEditOpen(true)}>Edit profile</button>
-          <button className="btn secondary" onClick={() => setFollowed((value) => !value)}>{followed ? 'Unfollow' : 'Follow'}</button>
         </div>
       </section>
 
       <section className="stats" style={{ marginTop: 18 }}>
-        <div className="stat"><strong>{formatNumber(currentUser.followers + (followed ? 1 : 0))}</strong><span className="muted">Followers</span></div>
+        <div className="stat"><strong>{formatNumber(currentUser.followers)}</strong><span className="muted">Followers</span></div>
         <div className="stat"><strong>{formatNumber(currentUser.following)}</strong><span className="muted">Following</span></div>
         <div className="stat"><strong>{formatNumber(currentUser.dailyStreams)}</strong><span className="muted">Daily streams</span></div>
         <div className="stat"><strong>{currentUser.birthDate || '—'}</strong><span className="muted">Birth date</span></div>
       </section>
 
-      {!canUploadProfileImage(currentUser.subscription) ? (
+      {!profileImageAllowed ? (
         <div className="card" style={{ marginTop: 18 }}>
           <span className="badge warning">Base subscription limit</span>
-          <p className="muted">According to the Phase 1 limits, base users cannot change their profile image.</p>
+          <p className="muted">Base users cannot change their profile image. The file chooser is available in edit mode, but saving a new profile image is blocked unless the account is Silver or Gold.</p>
         </div>
       ) : null}
 
       {editOpen ? (
-        <Modal title="Edit profile" onClose={() => setEditOpen(false)}>
+        <Modal title="Edit profile" onClose={() => { setEditOpen(false); setAvatarPreview(''); setAvatarError(''); }}>
           <form className="form" onSubmit={handleSubmit}>
             <div className="form-row"><label className="label">Display name</label><input className="input" name="displayName" defaultValue={currentUser.displayName} required /></div>
             <div className="form-grid">
@@ -70,8 +102,11 @@ export default function ProfilePage() {
               <div className="form-row"><label className="label">Gender</label><input className="input" name="gender" defaultValue={currentUser.gender} /></div>
             </div>
             <div className="form-row">
-              <label className="label">Profile image URL</label>
-              <input className="input" name="avatarUrl" defaultValue={currentUser.avatarUrl} disabled={!canUploadProfileImage(currentUser.subscription)} />
+              <label className="label">Choose profile image from computer</label>
+              <input className="input" name="avatarFile" type="file" accept="image/*" onChange={handleAvatarFile} />
+              <small className="muted">Only Silver and Gold users can save a selected profile image.</small>
+              {avatarError ? <span className="badge danger">{avatarError}</span> : null}
+              {avatarPreview ? <img src={avatarPreview} alt="Selected profile preview" className="avatar-preview" /> : null}
             </div>
             <button className="btn primary">Save changes</button>
           </form>

@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef
+} from 'react';
 import { getCollection, readStore, writeStore } from '@/lib/storage';
 import type { RepeatMode, Track } from '@/types/domain';
 
@@ -36,6 +44,27 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState(0);
   const [repeatMode, setRepeat] = useState<RepeatMode>('off');
   const [shuffle, setShuffle] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? null;
+  const queue = queueIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) as Track[];
+
+  useEffect(() => {
+    audioRef.current = new Audio();
+  }, []);
+
+  useEffect(() => {
+    const refreshTracks = () => {
+      setTracks(getCollection('tracks'));
+    };
+
+    refreshTracks();
+
+    window.addEventListener('focus', refreshTracks);
+    return () => {
+      window.removeEventListener('focus', refreshTracks);
+    };
+  }, []);
 
   useEffect(() => {
     const allTracks = getCollection('tracks');
@@ -52,6 +81,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       setQueueIds(allTracks.map((item) => item.id));
     }
   }, []);
+
+  useEffect(() => {
+    if (!audioRef.current || !currentTrack) return;
+
+    audioRef.current.pause();
+    audioRef.current.src = currentTrack.audioUrl ?? '';
+    audioRef.current.load();
+
+    if (isPlaying) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [currentTrack, isPlaying]);
 
   useEffect(() => {
     writeStore('player', { currentTrackId, queueIds, volume, repeatMode, shuffle });
@@ -72,12 +113,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearInterval(timer);
   }, [currentTrackId, isPlaying, tracks]);
 
-  const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? null;
-  const queue = queueIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) as Track[];
-
   const playTrack = useCallback((trackId: string, nextQueueIds?: string[]) => {
+    const latestTracks = getCollection('tracks');
+    setTracks(latestTracks);
+
     setCurrentTrackId(trackId);
-    setQueueIds(nextQueueIds && nextQueueIds.length > 0 ? nextQueueIds : (prev) => (prev.includes(trackId) ? prev : [trackId, ...prev]));
+
+    setQueueIds(
+      nextQueueIds && nextQueueIds.length > 0
+        ? nextQueueIds
+        : (prev) =>
+            prev.includes(trackId)
+              ? prev
+              : [trackId, ...prev]
+    );
+
     setProgress(0);
     setPlaying(true);
   }, []);
@@ -109,7 +159,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setProgress(0);
   }, [currentTrackId, queueIds]);
 
-  const setVolume = useCallback((value: number) => setPlayerVolume(Math.max(0, Math.min(100, value))), []);
+  const setVolume = useCallback((value: number) => {
+    const volumeValue = Math.max(0, Math.min(100, value));
+    setPlayerVolume(volumeValue);
+    if (audioRef.current) {
+      audioRef.current.volume = volumeValue / 100;
+    }
+  }, []);
+
   const seek = useCallback((value: number) => setProgress(Math.max(0, value)), []);
   const setRepeatMode = useCallback((mode: RepeatMode) => setRepeat(mode), []);
   const toggleShuffle = useCallback(() => setShuffle((value) => !value), []);

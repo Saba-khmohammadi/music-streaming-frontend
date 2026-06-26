@@ -44,19 +44,19 @@ export default function ProfilePage() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const form = new FormData(event.currentTarget);
-    if (!profileImageAllowed && avatarPreview) {
-      setAvatarError('Base users cannot change their profile image.');
-      return;
-    }
-    updateCurrentUser({
+
+    const updatedUser = {
       displayName: String(form.get('displayName')),
       birthDate: String(form.get('birthDate')),
       gender: String(form.get('gender')),
-      avatarUrl: profileImageAllowed && avatarPreview ? avatarPreview : currentUser.avatarUrl
-    });
+      avatarUrl: avatarPreview || currentUser.avatarUrl
+    };
+
+    updateCurrentUser(updatedUser);
+
     setAvatarPreview('');
-    setAvatarError('');
     setEditOpen(false);
   };
 

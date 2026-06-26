@@ -18,6 +18,7 @@ export interface User {
   avatarUrl?: string;
   followers: number;
   following: number;
+  followedArtistIds?: string[];
   dailyStreams: number;
   verifiedArtist?: boolean;
   artistId?: string;

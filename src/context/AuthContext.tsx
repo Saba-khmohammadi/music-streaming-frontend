@@ -18,7 +18,7 @@ interface RegisterArtistPayload {
   email: string;
   password: string;
   artistName: string;
-  sampleWorks: string;
+  sampleWorks: string[];
 }
 
 interface AuthContextValue {
@@ -66,6 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCollection('artists', nextArtists);
   }, []);
 
+  useEffect(() => {
+    const activeUser = users.find((item) => item.id === currentUserId);
+    if (!activeUser || typeof document === 'undefined') return;
+    document.documentElement.lang = activeUser.preferences.language;
+    document.documentElement.dir = activeUser.preferences.language === 'fa' ? 'rtl' : 'ltr';
+  }, [currentUserId, users]);
+
   const login = useCallback(
     (email: string, password: string) => {
       const user = users.find((item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password);
@@ -101,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         preferences: {
           notificationLimit: 20,
           systemSound: 'soft',
-          language: 'fa',
+          language: 'en',
           privacyAccepted: payload.privacyAccepted
         }
       };
@@ -126,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         followers: 0,
         monthlyListeners: 0,
         monthlyStreams: 0,
-        sampleWorks: payload.sampleWorks.split(',').map((item) => item.trim()).filter(Boolean)
+        sampleWorks: payload.sampleWorks
       };
       const user: User = {
         id: newId('user'),

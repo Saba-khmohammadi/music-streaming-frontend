@@ -2,13 +2,17 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { formatDuration, formatNumber } from '@/lib/format';
+import { canSeeAnalytics } from '@/lib/rules';
 import { getCollection } from '@/lib/storage';
 import type { Album, Artist, Track } from '@/types/domain';
 
 export default function TrackCard({ track, queueIds, action }: { track: Track; queueIds?: string[]; action?: React.ReactNode }) {
+  const { currentUser } = useAuth();
   const { playTrack, addToQueue } = usePlayer();
+  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
   const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
     const albums = getCollection('albums') as Album[];
@@ -27,7 +31,10 @@ export default function TrackCard({ track, queueIds, action }: { track: Track; q
           {artist ? <Link href={`/artists/${artist.id}`}>{artist.name}</Link> : 'Unknown artist'}
           {album ? <> · <Link href={`/albums/${album.id}`}>{album.title}</Link></> : null}
         </div>
-        <small className="muted">{formatDuration(track.duration)} · {formatNumber(track.listeners)} listeners</small>
+        <small className="muted">
+          {formatDuration(track.duration)}
+          {showAnalytics ? <> · {formatNumber(track.listeners)} listeners · {formatNumber(track.streams)} streams</> : null}
+        </small>
       </div>
       <div className="actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button className="btn primary" onClick={() => playTrack(track.id, queueIds)}>Play</button>

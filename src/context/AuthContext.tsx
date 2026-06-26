@@ -39,6 +39,19 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const shouldUseEnglishDefault = (user: User) => user.role === 'artist' || user.role === 'support' || user.role === 'admin';
+
+const normalizeEnglishDefaults = (nextUsers: User[]) => {
+  let changed = false;
+  const normalized = nextUsers.map((user) => {
+    if (!shouldUseEnglishDefault(user) || user.preferences.language === 'en') return user;
+    changed = true;
+    return { ...user, preferences: { ...user.preferences, language: 'en' as const } };
+  });
+  if (changed) setCollection('users', normalized);
+  return normalized;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -46,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setReady] = useState(false);
 
   const refreshUsers = useCallback(() => {
-    setUsers(getCollection('users'));
+    setUsers(normalizeEnglishDefaults(getCollection('users')));
     setArtists(getCollection('artists'));
   }, []);
 
@@ -77,11 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (email: string, password: string) => {
       const user = users.find((item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password);
       if (!user) return false;
+      if (shouldUseEnglishDefault(user) && user.preferences.language !== 'en') {
+        persistUsers(users.map((item) => item.id === user.id ? { ...item, preferences: { ...item.preferences, language: 'en' as const } } : item));
+      }
       setCurrent(user.id);
       setCurrentUserId(user.id);
       return true;
     },
-    [users]
+    [persistUsers, users]
   );
 
   const logout = useCallback(() => {
@@ -149,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         dailyStreams: 0,
         verifiedArtist: false,
         artistId: artist.id,
-        preferences: { notificationLimit: 20, systemSound: 'soft', language: 'fa', privacyAccepted: true }
+        preferences: { notificationLimit: 20, systemSound: 'soft', language: 'en', privacyAccepted: true }
       };
       persistArtists([...artists, artist]);
       persistUsers([...users, user]);

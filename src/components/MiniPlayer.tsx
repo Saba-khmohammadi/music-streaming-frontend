@@ -8,6 +8,8 @@ import { getCollection } from '@/lib/storage';
 import { formatDuration } from '@/lib/format';
 import { canSeeAnalytics } from '@/lib/rules';
 import type { Album, Artist } from '@/types/domain';
+import { useEffect } from 'react';
+
 
 export default function MiniPlayer() {
   const { currentUser } = useAuth();
@@ -15,6 +17,12 @@ export default function MiniPlayer() {
   const [showQueue, setShowQueue] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  useEffect(() => {
+    if (currentTrack && window.innerWidth < 768) {
+      setIsExpanded(true);
+    }
+  }, [currentTrack]);
+  
 
   const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
@@ -24,6 +32,12 @@ export default function MiniPlayer() {
       album: albums.find((item) => item.id === currentTrack?.albumId)
     };
   }, [currentTrack]);
+
+  useEffect(() => {
+    const handleExpand = () => setIsExpanded(true);
+    window.addEventListener('expand-player', handleExpand);
+    return () => window.removeEventListener('expand-player', handleExpand);
+  }, []);
 
   if (!currentTrack) return null;
   const duration = currentTrack.duration || 1;
@@ -75,14 +89,14 @@ export default function MiniPlayer() {
 
         <div className="player-controls">
           <div className="control-buttons">
-          <button 
-              className={`icon-btn ${shuffle ? 'active' : ''}`} 
-              onClick={toggleShuffle} 
-              title="Shuffle" 
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: shuffle ? '#7c3aed' : '#a3a3a3', opacity: shuffle ? 1 : 0.6 }}
-            >
-              <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-            </button>
+            <button 
+                className={`icon-btn ${shuffle ? 'active' : ''}`} 
+                onClick={toggleShuffle} 
+                title="Shuffle" 
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: shuffle ? '#7c3aed' : '#a3a3a3', opacity: shuffle ? 1 : 0.6 }}
+              >
+                <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+              </button>
             
             <button className="icon-btn" onClick={previous} title="Previous" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}>
               <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
@@ -110,6 +124,17 @@ export default function MiniPlayer() {
                 <span style={{ fontSize: '9px', position: 'absolute', bottom: '-2px', right: '-2px', background: '#7c3aed', color: '#fff', borderRadius: '50%', width: '13px', height: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</span>
               )}
             </button>
+
+            {!isExpanded && (
+              <button 
+                className="icon-btn mobile-only-expand"
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
+                title="Maximize"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}
+              >
+                <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="18 15 12 9 6 15"></polyline></svg>
+              </button>
+                )}
           </div>
           <div className="progress-line">
             <small>{formatDuration(progress)}</small>

@@ -7,6 +7,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { getCollection } from '@/lib/storage';
 import { formatDuration } from '@/lib/format';
 import type { Album, Artist } from '@/types/domain';
+import { canSeeAnalytics } from '@/lib/rules';
 
 export default function MiniPlayer() {
   const { currentUser } = useAuth();
@@ -57,7 +58,7 @@ export default function MiniPlayer() {
               {album ? <span className="album-separator-premium"> · <Link href={`/albums/${album.id}`} className="album-link-premium">{album.title}</Link></span> : null}
             </div>
             
-            {currentUser && currentUser.subscription === 'gold' ? (
+            {currentUser && canSeeAnalytics(currentUser.role, currentUser.subscription) ? (
               <div className="gold-analytics-badge">
                 <div className="crown-glow-icon">
                   <i className="fas fa-crown"></i>

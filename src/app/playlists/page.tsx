@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
 import EmptyState from '@/components/EmptyState';
 import Modal from '@/components/Modal';
@@ -11,6 +11,7 @@ import { canCreatePlaylist, playlistLimit } from '@/lib/rules';
 import { getCollection, newId, setCollection } from '@/lib/storage';
 import { formatDate, formatNumber } from '@/lib/format';
 import type { Playlist, Track } from '@/types/domain';
+import { canSeeAnalytics } from '@/lib/rules';
 
 export default function PlaylistsPage() {
   const { currentUser } = useAuth();
@@ -33,7 +34,7 @@ export default function PlaylistsPage() {
     if (!canCreate) return;
     const form = new FormData(event.currentTarget);
     const title = String(form.get('title'));
-    const coverUrl = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><rect width="600" height="600" rx="80" fill="#7c3aed"/><text x="300" y="330" text-anchor="middle" font-size="60" font-family="Arial" fill="white">${title}</text></svg>`)}`;
+    const coverUrl = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#22d3ee"/></linearGradient></defs><rect width="600" height="600" rx="120" fill="url(#grad)"/><text x="300" y="320" text-anchor="middle" font-size="70" font-family="system-ui, sans-serif" font-weight="bold" fill="white">${title.slice(0, 15)}</text></svg>`)}`;
     persist([...playlists, { id: newId('playlist'), ownerId: currentUser.id, title, coverUrl, trackIds: [], updatedAt: new Date().toISOString() }]);
     event.currentTarget.reset();
   };
@@ -51,80 +52,79 @@ export default function PlaylistsPage() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Playlists"
-        description="Create, delete, rename, and view tracks inside each playlist. Playlist limits are enforced by subscription type."
-        actions={<span className="badge">Limit: {Number.isFinite(limit) ? formatNumber(limit) : 'Unlimited'}</span>}
-      />
+      
 
-        <section className="card" style={{ marginBottom: 22 }}>
-          
-          {!canCreate && (
-            <div style={{
-              
-              background: 'linear-gradient(135deg, #120c1f 0%, #2d1218 100%)', 
-              border: '1px solid #4c1d24', 
-              color: '#fca5a5', 
-              padding: '16px 20px', 
-              borderRadius: '12px', 
-              marginBottom: '20px',
-              fontSize: '14px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
-            }}>
-              <span style={{ fontSize: '18px', color: '#f87171' }}></span>
-              You have reached the maximum limit of {limit} playlists for your current subscription. Please upgrade your plan to create more.
-            </div>
-          )}
+      <section className="premium-playlist-creator-card">
+        {!canCreate && (
+          <div className="premium-limit-alert">
+            <i className="fas fa-exclamation-triangle alert-icon-neon"></i>
+            <span>You have reached the maximum limit of {limit} playlists for your current subscription. Please upgrade your plan to create more.</span>
+          </div>
+        )}
 
-        <form className="form-grid" onSubmit={createPlaylist}>
-          <div className="form-row">
-            <label className="label">New playlist name</label>
+        <form className="premium-form-grid" onSubmit={createPlaylist}>
+          <div className="premium-input-wrapper">
+            <label className="premium-label">New playlist name</label>
             <input 
-              className="input" 
+              className="premium-glass-input" 
               name="title" 
-              placeholder="e.g. Study tracks" 
+              placeholder="" 
               required 
               disabled={!canCreate} 
             />
           </div>
-          <div className="form-row" style={{ justifyContent: 'end' }}>
-            <button className="btn primary" disabled={!canCreate}>Create playlist</button>
-          </div>
+          <button className="premium-action-submit-btn" disabled={!canCreate}>
+            <i className="fas fa-plus"></i> Create playlist
+          </button>
         </form>
       </section>
 
       {!myPlaylists.length ? (
         <EmptyState title="You do not have any playlists yet" description="Use the button above to create your first playlist." />
       ) : (
-        <div className="grid cols-2">
+        <div className="premium-playlists-layout">
           {myPlaylists.map((playlist) => {
             const playlistTracks = playlist.trackIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) as Track[];
             return (
-              <article className="card" key={playlist.id}>
-                <div className="profile-hero" style={{ gridTemplateColumns: '90px 1fr auto' }}>
-                  <img src={playlist.coverUrl} alt={playlist.title} style={{ width: 90, height: 90, borderRadius: 22 }} />
-                  <div>
-                    <h2>{playlist.title}</h2>
-                    <p className="muted">{playlistTracks.length} tracks · updated {formatDate(playlist.updatedAt)}</p>
+              <article className="premium-playlist-card" key={playlist.id}>
+                <div className="premium-playlist-hero">
+                  <div className="premium-playlist-cover-container">
+                    <img src={playlist.coverUrl} alt={playlist.title} className="premium-playlist-img" />
                   </div>
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    <button className="btn ghost" onClick={() => setEditing(playlist)}>Rename</button>
-                    <button className="btn danger" onClick={() => deletePlaylist(playlist.id)}>Delete</button>
+                  <div className="premium-playlist-details">
+                    <h2 className="premium-playlist-title">{playlist.title}</h2>
+                    <p className="premium-playlist-meta">
+                      <i className="fas fa-music"></i> {playlistTracks.length} tracks 
+                      <span className="meta-dot">·</span> 
+                      <i className="fas fa-calendar-alt"></i> updated {formatDate(playlist.updatedAt)}
+                    </p>
+                  </div>
+                  <div className="premium-playlist-actions">
+                    <button className="premium-row-btn rename-btn" onClick={() => setEditing(playlist)} title="Rename">
+                      <i className="fas fa-edit"></i>
+                    </button>
+                    <button className="premium-row-btn delete-btn" onClick={() => deletePlaylist(playlist.id)} title="Delete">
+                      <i className="fas fa-trash-alt"></i>
+                    </button>
                   </div>
                 </div>
-                <div className="grid" style={{ marginTop: 16 }}>
+                <div className="premium-playlist-tracks-zone">
                   {playlistTracks.length ? playlistTracks.map((track) => (
-                    <TrackCard key={track.id} track={track} queueIds={playlistTracks.map((item) => item.id)} action={<button className="btn danger" onClick={() => removeTrack(playlist.id, track.id)}>Remove from playlist</button>} />
-                  )) : (
-                    <EmptyState 
-                      title="This playlist is still empty" 
-                      description="Add tracks from the Albums and Singles page." 
+                    <TrackCard 
+                      key={track.id} 
+                      track={track} 
+                      queueIds={playlistTracks.map((item) => item.id)} 
+                      action={
+                        <button className="premium-track-remove-btn" onClick={() => removeTrack(playlist.id, track.id)}>
+                          <i className="fas fa-minus-circle"></i> Remove
+                        </button>
+                      } 
                     />
+                  )) : (
+                    <div className="premium-empty-inside">
+                      <i className="fas fa-compact-disc fa-spin"></i>
+                      <p>This playlist is still empty. Add tracks from the Albums and Singles page.</p>
+                    </div>
                   )}
                 </div>
               </article>
@@ -135,9 +135,12 @@ export default function PlaylistsPage() {
 
       {editing ? (
         <Modal title="Rename playlist" onClose={() => setEditing(null)}>
-          <form className="form" onSubmit={renamePlaylist}>
-            <div className="form-row"><label className="label">New name</label><input className="input" name="title" defaultValue={editing.title} required /></div>
-            <button className="btn primary">Save</button>
+          <form className="premium-modal-form" onSubmit={renamePlaylist}>
+            <div className="premium-input-wrapper">
+              <label className="premium-label">New name</label>
+              <input className="premium-glass-input" name="title" defaultValue={editing.title} required />
+            </div>
+            <button className="premium-action-submit-btn modal-btn">Save Changes</button>
           </form>
         </Modal>
       ) : null}

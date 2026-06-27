@@ -1,15 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { getCollection } from '@/lib/storage';
 import { formatDuration } from '@/lib/format';
-import { canSeeAnalytics } from '@/lib/rules';
 import type { Album, Artist } from '@/types/domain';
-import { useEffect } from 'react';
-
 
 export default function MiniPlayer() {
   const { currentUser } = useAuth();
@@ -17,12 +14,14 @@ export default function MiniPlayer() {
   const [showQueue, setShowQueue] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+
   useEffect(() => {
     if (currentTrack && window.innerWidth < 768) {
       setIsExpanded(true);
     }
   }, [currentTrack]);
-  
 
   const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
@@ -45,110 +44,159 @@ export default function MiniPlayer() {
 
   return (
     <>
-      <section className={`player ${isExpanded ? 'mobile-expanded' : ''}`} aria-label="music player">
-        
-        <div className="player-track" onClick={() => window.innerWidth < 768 && setIsExpanded(true)}>
-        <img className="player-cover" src={currentTrack.coverUrl} alt={currentTrack.title} />
-          <div style={{ minWidth: 0 }}>
-            <strong className="truncate">{currentTrack.title}</strong>
-            <div className="muted truncate">
-              {artist ? <Link href={`/artists/${artist.id}`}>{artist.name}</Link> : 'Unknown artist'}
-              {album ? <> · <Link href={`/albums/${album.id}`}>{album.title}</Link></> : null}
+      <section className={`player-premium-container ${isExpanded ? 'mobile-expanded' : ''}`} aria-label="music player">
+    
+      <div className="player-track-premium" onClick={() => window.innerWidth < 768 && setIsExpanded(true)}>
+          <div className="cover-wrapper-premium">
+            <img className="player-cover-premium" src={currentTrack.coverUrl} alt={currentTrack.title} />
+          </div>
+          <div className="track-info-premium">
+            <strong className="track-title-premium truncate">{currentTrack.title}</strong>
+            <div className="track-meta-premium truncate">
+              {artist ? <Link href={`/artists/${artist.id}`} className="artist-link-premium">{artist.name}</Link> : <span className="unknown-premium">Unknown artist</span>}
+              {album ? <span className="album-separator-premium"> · <Link href={`/albums/${album.id}`} className="album-link-premium">{album.title}</Link></span> : null}
             </div>
             
             {currentUser && currentUser.subscription === 'gold' ? (
-              <small className="badge" style={{ backgroundColor: '#eab308', color: '#000', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <svg viewBox="0 0 576 512" style={{ width: '12px', height: '12px', fill: 'currentColor' }}><path d="M576 136c0 22.1-17.9 40-40 40c-.2 0-.4 0-.6 0l-22.5 135.2c-1.9 11.4-11.8 19.8-23.4 19.8H86.4c-11.6 0-21.5-8.4-23.4-19.8L40.6 176c-.2 0-.4 0-.6 0c-22.1 0-40-17.9-40-40S17.9 96 40 96c14.7 0 27.5 8 34.3 19.8l109.3 54.7c11.2 5.6 24 .5 29-10.7l64-144c5.1-11.5 16.4-18.8 29-18.8s23.9 7.3 29 18.8l64 144c5 11.2 17.8 16.3 29 10.7l109.3-54.7c6.8-11.8 19.6-19.8 34.3-19.8c22.1 0 40 17.9 40 40zM48 464c0 26.5 21.5 48 48 48h384c26.5 0 48-21.5 48-48V416H48v48z"/></svg>
-                {currentTrack.listeners.toLocaleString('en-US')} listeners · {currentTrack.streams.toLocaleString('en-US')} streams
-              </small>
+              <div className="gold-analytics-badge">
+                <div className="crown-glow-icon">
+                  <i className="fas fa-crown"></i>
+                </div>
+                <div className="analytics-data-premium">
+                  <span>{currentTrack.listeners.toLocaleString('en-US')} listeners</span>
+                  <span className="dot-divider"></span>
+                  <span>{currentTrack.streams.toLocaleString('en-US')} streams</span>
+                </div>
+              </div>
             ) : null}
           </div>
 
           {isExpanded && (
             <button 
-              className="btn ghost close-mobile-player" 
+              className="neon-control-btn close-mobile-player" 
               onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
-              style={{ 
-                marginLeft: 'auto', 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                padding: '8px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: '50%',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#fff'
-              }}
               title="Minimize"
             >
-              <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <div className="neon-control-circle small-circle">
+                <i className="fas fa-chevron-down"></i>
+              </div>
             </button>
           )}
         </div>
 
-        <div className="player-controls">
-          <div className="control-buttons">
+        <div className="player-controls-premium">
+          <div className="control-buttons-premium">
             <button 
-                className={`icon-btn ${shuffle ? 'active' : ''}`} 
-                onClick={toggleShuffle} 
-                title="Shuffle" 
-                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: shuffle ? '#7c3aed' : '#a3a3a3', opacity: shuffle ? 1 : 0.6 }}
-              >
-                <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-              </button>
-            
-            <button className="icon-btn" onClick={previous} title="Previous" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}>
-              <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+              className={`neon-control-btn ${shuffle ? 'active' : ''}`} 
+              onClick={toggleShuffle} 
+              title="Shuffle" 
+            >
+              <div className="neon-control-circle">
+                <i className="fas fa-random"></i>
+              </div>
             </button>
-            <button className="icon-btn active" onClick={togglePlay} title="Play/Pause" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-              {isPlaying ? (
-                <svg viewBox="0 0 24 24" style={{ width: '22px', height: '22px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><line x1="18" y1="4" x2="18" y2="20"></line><line x1="6" y1="4" x2="6" y2="20"></line></svg>
-              ) : (
-                <svg viewBox="0 0 24 24" style={{ width: '22px', height: '22px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', transform: 'translateX(1px)' }}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              )}
+            
+            <button className="neon-control-btn" onClick={previous} title="Previous">
+              <div className="neon-control-circle">
+                <i className="fas fa-step-backward"></i>
+              </div>
             </button>
 
-            <button className="icon-btn" onClick={next} title="Next" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}>
-              <svg viewBox="0 0 24 24" style={{ width: '20px', height: '20px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="19" x2="19" y2="5"></line></svg>
+            <button className="neon-control-btn active-play" onClick={togglePlay} title="Play/Pause">
+              <div className="neon-control-circle play-master-btn">
+                {isPlaying ? <i className="fas fa-pause"></i> : <i className="fas fa-play" style={{ transform: 'translateX(2px)' }}></i>}
+              </div>
+            </button>
+
+            <button className="neon-control-btn" onClick={next} title="Next">
+              <div className="neon-control-circle">
+                <i className="fas fa-step-forward"></i>
+              </div>
             </button>
             
             <button
-              className={`icon-btn ${repeatMode !== 'off' ? 'active' : ''}`}
+              className={`neon-control-btn ${repeatMode !== 'off' ? 'active' : ''}`}
               onClick={() => setRepeatMode(repeatMode === 'off' ? 'all' : repeatMode === 'all' ? 'one' : 'off')}
               title={repeatLabel}
-              style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: repeatMode !== 'off' ? '#7c3aed' : '#a3a3a3', opacity: repeatMode !== 'off' ? 1 : 0.6 }}
+              style={{ position: 'relative' }}
             >
-              <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+              <div className="neon-control-circle">
+                <i className="fas fa-redo"></i>
+              </div>
               {repeatMode === 'one' && (
-                <span style={{ fontSize: '9px', position: 'absolute', bottom: '-2px', right: '-2px', background: '#7c3aed', color: '#fff', borderRadius: '50%', width: '13px', height: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</span>
+                <span className="repeat-badge-one">1</span>
               )}
             </button>
 
             {!isExpanded && (
               <button 
-                className="icon-btn mobile-only-expand"
+                className="neon-control-btn mobile-only-expand"
                 onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
                 title="Maximize"
-                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#a3a3a3' }}
               >
-                <svg viewBox="0 0 24 24" style={{ width: '18px', height: '18px', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round' }}><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <div className="neon-control-circle small-circle">
+                  <i className="fas fa-chevron-up"></i>
+                </div>
               </button>
-                )}
+            )}
           </div>
-          <div className="progress-line">
+
+          <div className="progress-line-premium">
             <small>{formatDuration(progress)}</small>
             <input type="range" min={0} max={duration} value={Math.min(progress, duration)} onChange={(event) => seek(Number(event.target.value))} />
             <small>{formatDuration(duration)}</small>
           </div>
         </div>
 
-        <div className="player-side">
-          <button className="btn ghost" onClick={() => setShowLyrics((value) => !value)}>Lyrics</button>
-          <button className="btn ghost" onClick={() => setShowQueue((value) => !value)}>Queue</button>
-          <span className="muted">Volume</span>
-          <input aria-label="volume" type="range" min={0} max={100} value={volume} onChange={(event) => setVolume(Number(event.target.value))} />
+        <div className="player-side-premium">
+          <button 
+            className={`neon-btn ${showLyrics ? 'active' : ''}`} 
+            onClick={() => setShowLyrics((value) => !value)}
+            title="Lyrics"
+          >
+            <div className="neon-circle">
+              <i className="fas fa-microphone-alt"></i>
+            </div>
+          </button>
+
+          <button 
+            className={`neon-btn ${showQueue ? 'active' : ''}`} 
+            onClick={() => setShowQueue((value) => !value)}
+            title="Queue"
+          >
+            <div className="neon-circle">
+              <i className="fas fa-list-ul"></i>
+            </div>
+          </button>
+
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <button 
+              className={`neon-btn ${showVolumeSlider ? 'active' : ''}`} 
+              onClick={() => setShowVolumeSlider((value) => !value)}
+              title="Volume"
+            >
+              <div className="neon-circle">
+                <i className={`fas ${volume === 0 ? 'fa-volume-mute' : volume < 40 ? 'fa-volume-down' : 'fa-volume-up'}`}></i>
+              </div>
+            </button>
+
+            {showVolumeSlider && (
+              <div className="glass-volume-popup">
+                <input 
+                  aria-label="volume" 
+                  type="range" 
+                  min={0} 
+                  max={100} 
+                  value={volume} 
+                  onChange={(event) => setVolume(Number(event.target.value))} 
+                  className="premium-volume-slider-vertical"
+                />
+                <span className="volume-text">{volume}%</span>
+              </div>
+            )}
+          </div>
         </div>
+
       </section>
 
       {showQueue ? (

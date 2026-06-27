@@ -17,7 +17,17 @@ export default function ArtistManagePage() {
   const [albums, setAlbums] = useState<Album[]>(getCollection('albums'));
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const artists = getCollection('artists') as Artist[];
+  const [releaseType, setReleaseType] = useState<'single' | 'album'>('single');
 
+  const [albumTracks, setAlbumTracks] = useState([
+    {
+      title: '',
+      genre: '',
+      lyrics: '',
+      collaborators: '',
+      audio: null as File | null
+    }
+  ]);
   const artist = currentUser?.artistId
     ? artists.find((item) => item.id === currentUser.artistId)
     : null;
@@ -26,7 +36,18 @@ export default function ArtistManagePage() {
     () => (artist ? tracks.filter((track) => track.artistId === artist.id) : []),
     [artist, tracks]
   );
-
+  const addAlbumTrack = () => {
+  setAlbumTracks((prev) => [
+    ...prev,
+    {
+      title: '',
+      genre: '',
+      lyrics: '',
+      collaborators: '',
+      audio: null
+    }
+    ]);
+  };
   const totalStreams = artistTracks.reduce((sum, track) => sum + track.streams, 0);
   const totalListeners = artistTracks.reduce((sum, track) => sum + track.listeners, 0);
   const mockIncome = totalStreams * 900;
@@ -253,10 +274,17 @@ export default function ArtistManagePage() {
 
             <div className="form-row">
               <label className="label">Release type</label>
-              <select className="select" name="type">
-                <option value="single">Single</option>
-                <option value="album">Album</option>
-              </select>
+              <select
+              className="select"
+              name="type"
+              value={releaseType}
+              onChange={(e) =>
+                  setReleaseType(e.target.value as 'single' | 'album')
+              }
+          >
+              <option value="single">Single</option>
+              <option value="album">Album</option>
+          </select>
             </div>
 
             <div className="form-row">
@@ -311,6 +339,57 @@ export default function ArtistManagePage() {
               />
             </div>
           </div>
+          
+          {releaseType === 'album' && (
+            <>
+              <h3 style={{marginTop:20}}>Tracks</h3>
+
+              {albumTracks.map((track,index)=>(
+                <div
+                  key={index}
+                  className="card"
+                  style={{marginBottom:20}}
+                >
+                  <h4>Track {index+1}</h4>
+
+                  <div className="form-row">
+                    <label className="label">Title</label>
+                    <input
+                      className="input"
+                      name={`trackTitle-${index}`}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label className="label">Audio</label>
+                    <input
+                      className="input"
+                      type="file"
+                      accept="audio/*"
+                      name={`trackAudio-${index}`}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label className="label">Lyrics</label>
+                    <textarea
+                      className="textarea"
+                      name={`trackLyrics-${index}`}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className="btn"
+                onClick={addAlbumTrack}
+              >
+                + Add Track
+              </button>
+            </>
+          )}
+
           <button className="btn primary">
             {editingTrack ? "Save changes" : "Publish"}
           </button>

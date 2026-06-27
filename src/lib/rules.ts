@@ -38,7 +38,14 @@ export const canUploadProfileImage = (tier: SubscriptionTier) => tier !== 'base'
 
 export const canDownloadTrack = (tier: SubscriptionTier) => tier !== 'base';
 
-export const canSeeAnalytics = (tier: SubscriptionTier) => tier === 'gold';
+export const canSeeAnalytics = (
+  role: UserRole,
+  tier: SubscriptionTier
+) => {
+  if (role === 'artist') return true;
+
+  return tier === 'gold';
+};
 
 export const canAccessEarlyRelease = (tier: SubscriptionTier) => tier === 'gold';
 

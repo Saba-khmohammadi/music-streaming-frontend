@@ -38,16 +38,16 @@ function Shell({ children }: { children: React.ReactNode }) {
   };
 
   const Nav = () => (
-    <nav className="nav-list" aria-label="main navigation">
+    <nav className="premium-nav-list">
       {navItems.map((item) => {
         const isNotifications = item.href === '/notifications';
+        const isActive = pathname.startsWith(item.href);
         return (
-          <Link key={item.href} href={item.href} className={`nav-link ${pathname.startsWith(item.href) ? 'active' : ''}`} onClick={() => setOpen(false)}>
-            <span className="nav-label">
-              <span>{item.label}</span>
-              {isNotifications && unreadNotifications ? <span className="notif-dot" aria-label="Unread notifications" /> : null}
+          <Link key={item.href} href={item.href} className={`premium-nav-link ${isActive ? 'active' : ''}`} onClick={() => setOpen(false)}>
+            <span className="nav-label-wrapper">
+              <span className="nav-text">{item.label}</span>
+              {isNotifications && unreadNotifications ? <span className="notif-dot-glow" /> : null}
             </span>
-            <span>›</span>
           </Link>
         );
       })}
@@ -55,34 +55,31 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="app-layout">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-logo">♫</div>
-          <div>
-            <strong>Music Stream</strong>
-            <small>Phase 1 Frontend</small>
-          </div>
+    <div className="premium-app-layout">
+      <aside className={`sidebar ${open ? 'mobile-show' : ''}`}>
+      <div className="brand-zone">
+        <div className="brand-logo-glow">
+          <i className="fas fa-music"></i>
         </div>
+        <span className="brand-text">MusicStream</span>
+      </div>
         <Nav />
         <div className="sidebar-footer">
-          <button className="btn ghost block" onClick={handleLogout}>{language === 'fa' ? 'خروج' : 'Log out'}</button>
+          <button className="premium-logout-btn" onClick={handleLogout}>{language === 'fa' ? 'خروج' : 'Log out'}</button>
         </div>
       </aside>
+
       <main className="main-area">
-        <header className="topbar">
-          <button className="btn ghost mobile-menu-btn" onClick={() => setOpen((value) => !value)}>{open ? (language === 'fa' ? 'بستن منو' : 'Close Menu') : (language === 'fa' ? 'منو' : 'Menu')}</button>
-          <div>
-            <strong>{displayRoleLabel(currentUser.role, language)}</strong>
-            <div className="muted">{language === 'fa' ? 'اشتراک' : 'Subscription'}: {displaySubscriptionLabel(currentUser.subscription, language)}</div>
-          </div>
-          <Link className="user-pill" href="/profile">
-            <img src={currentUser.avatarUrl} alt="profile" className="avatar" />
-            <span>{currentUser.displayName}</span>
+        <header className="premium-topbar">
+          
+          <Link className="user-profile-pill" href="/profile">
+            <img src={currentUser.avatarUrl} alt="profile" className="avatar-img" />
+            <span className="user-name">{currentUser.displayName}</span>
           </Link>
         </header>
-        {open ? <div className="mobile-nav"><Nav /></div> : null}
-        <div className="content">{children}</div>
+
+        {open && <div className="mobile-nav-backdrop" onClick={() => setOpen(false)} />}
+        <div className="content-area">{children}</div>
       </main>
       <MiniPlayer />
     </div>

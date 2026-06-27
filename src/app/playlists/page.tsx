@@ -57,12 +57,45 @@ export default function PlaylistsPage() {
         actions={<span className="badge">Limit: {Number.isFinite(limit) ? formatNumber(limit) : 'Unlimited'}</span>}
       />
 
-      <section className="card" style={{ marginBottom: 22 }}>
+        <section className="card" style={{ marginBottom: 22 }}>
+          
+          {!canCreate && (
+            <div style={{
+              
+              background: 'linear-gradient(135deg, #120c1f 0%, #2d1218 100%)', 
+              border: '1px solid #4c1d24', 
+              color: '#fca5a5', 
+              padding: '16px 20px', 
+              borderRadius: '12px', 
+              marginBottom: '20px',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
+            }}>
+              <span style={{ fontSize: '18px', color: '#f87171' }}></span>
+              You have reached the maximum limit of {limit} playlists for your current subscription. Please upgrade your plan to create more.
+            </div>
+          )}
+
         <form className="form-grid" onSubmit={createPlaylist}>
-          <div className="form-row"><label className="label">New playlist name</label><input className="input" name="title" placeholder="e.g. Study tracks" required /></div>
-          <div className="form-row" style={{ justifyContent: 'end' }}><button className="btn primary" disabled={!canCreate}>Create playlist</button></div>
+          <div className="form-row">
+            <label className="label">New playlist name</label>
+            <input 
+              className="input" 
+              name="title" 
+              placeholder="e.g. Study tracks" 
+              required 
+              disabled={!canCreate} 
+            />
+          </div>
+          <div className="form-row" style={{ justifyContent: 'end' }}>
+            <button className="btn primary" disabled={!canCreate}>Create playlist</button>
+          </div>
         </form>
-        {!canCreate ? <p className="muted">You have reached the playlist limit for your current subscription.</p> : null}
       </section>
 
       {!myPlaylists.length ? (
@@ -75,7 +108,10 @@ export default function PlaylistsPage() {
               <article className="card" key={playlist.id}>
                 <div className="profile-hero" style={{ gridTemplateColumns: '90px 1fr auto' }}>
                   <img src={playlist.coverUrl} alt={playlist.title} style={{ width: 90, height: 90, borderRadius: 22 }} />
-                  <div><h2>{playlist.title}</h2><p className="muted">{playlistTracks.length} tracks · updated {formatDate(playlist.updatedAt)}</p></div>
+                  <div>
+                    <h2>{playlist.title}</h2>
+                    <p className="muted">{playlistTracks.length} tracks · updated {formatDate(playlist.updatedAt)}</p>
+                  </div>
                   <div style={{ display: 'grid', gap: 8 }}>
                     <button className="btn ghost" onClick={() => setEditing(playlist)}>Rename</button>
                     <button className="btn danger" onClick={() => deletePlaylist(playlist.id)}>Delete</button>
@@ -84,7 +120,12 @@ export default function PlaylistsPage() {
                 <div className="grid" style={{ marginTop: 16 }}>
                   {playlistTracks.length ? playlistTracks.map((track) => (
                     <TrackCard key={track.id} track={track} queueIds={playlistTracks.map((item) => item.id)} action={<button className="btn danger" onClick={() => removeTrack(playlist.id, track.id)}>Remove from playlist</button>} />
-                  )) : <EmptyState title="This playlist is still empty" description="Add tracks from the Albums and Singles page." />}
+                  )) : (
+                    <EmptyState 
+                      title="This playlist is still empty" 
+                      description="Add tracks from the Albums and Singles page." 
+                    />
+                  )}
                 </div>
               </article>
             );

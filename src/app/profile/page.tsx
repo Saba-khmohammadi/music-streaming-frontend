@@ -16,7 +16,10 @@ export default function ProfilePage() {
 
   if (!currentUser) return <AppShell><div /></AppShell>;
 
-  const profileImageAllowed = canUploadProfileImage(currentUser.subscription);
+  const profileImageAllowed =
+  currentUser.role === 'artist'
+    ? true
+    : canUploadProfileImage(currentUser.subscription);
 
   const handleAvatarFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -69,7 +72,11 @@ export default function ProfilePage() {
           <h2>{currentUser.displayName}</h2>
           <p className="muted">@{currentUser.username}</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span className="badge">Subscription: {subscriptionLabels[currentUser.subscription]}</span>
+          {currentUser.role !== 'artist' && (
+            <span className="badge">
+              Subscription: {subscriptionLabels[currentUser.subscription]}
+            </span>
+          )}
             <span className="badge">Role: {currentUser.role}</span>
             {currentUser.verifiedArtist ? <span className="badge success">Verified artist</span> : null}
           </div>
@@ -86,12 +93,16 @@ export default function ProfilePage() {
         <div className="stat"><strong>{currentUser.birthDate || '—'}</strong><span className="muted">Birth date</span></div>
       </section>
 
-      {!profileImageAllowed ? (
-        <div className="card" style={{ marginTop: 18 }}>
-          <span className="badge warning">Base subscription limit</span>
-          <p className="muted">Base users cannot change their profile image. The file chooser is available in edit mode, but saving a new profile image is blocked unless the account is Silver or Gold.</p>
-        </div>
-      ) : null}
+        {currentUser.role !== 'artist' && !profileImageAllowed ? (
+    <div className="card" style={{ marginTop: 18 }}>
+      <span className="badge warning">Base subscription limit</span>
+      <p className="muted">
+        Base users cannot change their profile image. The file chooser is
+        available in edit mode, but saving a new profile image is blocked
+        unless the account is Silver or Gold.
+      </p>
+    </div>
+  ) : null}
 
       {editOpen ? (
         <Modal title="Edit profile" onClose={() => { setEditOpen(false); setAvatarPreview(''); setAvatarError(''); }}>
@@ -104,8 +115,11 @@ export default function ProfilePage() {
             <div className="form-row">
               <label className="label">Choose profile image from computer</label>
               <input className="input" name="avatarFile" type="file" accept="image/*" onChange={handleAvatarFile} />
-              <small className="muted">Only Silver and Gold users can save a selected profile image.</small>
-              {avatarError ? <span className="badge danger">{avatarError}</span> : null}
+{currentUser.role !== 'artist' && (
+  <small className="muted">
+    Only Silver and Gold users can save a selected profile image.
+  </small>
+)}              {avatarError ? <span className="badge danger">{avatarError}</span> : null}
               {avatarPreview ? <img src={avatarPreview} alt="Selected profile preview" className="avatar-preview" /> : null}
             </div>
             <button className="btn primary">Save changes</button>

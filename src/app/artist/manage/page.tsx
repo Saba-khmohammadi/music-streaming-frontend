@@ -30,7 +30,12 @@ export default function ArtistManagePage() {
   const totalStreams = artistTracks.reduce((sum, track) => sum + track.streams, 0);
   const totalListeners = artistTracks.reduce((sum, track) => sum + track.listeners, 0);
   const mockIncome = totalStreams * 900;
-  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
+  const showAnalytics = currentUser
+  ? canSeeAnalytics(
+      currentUser.role,
+      currentUser.subscription
+    )
+  : false;
 
   const editTrack = (track: Track) => {
     setEditingTrack(track);

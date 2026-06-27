@@ -26,12 +26,16 @@ const showAnalytics = currentUser
     };
   }, [track.albumId, track.artistId]);
 
+  const handleCardClick = () => {
+    playTrack(track.id, queueIds);
+  };
+
   return (
-    <div className="track-row">
+    <div className="track-row" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <img src={track.coverUrl} alt={track.title} />
       <div style={{ minWidth: 0 }}>
         <strong className="truncate">{track.title}</strong>
-        <div className="muted truncate">
+        <div className="muted truncate" onClick={(e) => e.stopPropagation()}>
           {artist ? <Link href={`/artists/${artist.id}`}>{artist.name}</Link> : 'Unknown artist'}
           {album ? <> · <Link href={`/albums/${album.id}`}>{album.title}</Link></> : null}
         </div>
@@ -40,7 +44,7 @@ const showAnalytics = currentUser
           {showAnalytics ? <> · {formatNumber(track.listeners)} listeners · {formatNumber(track.streams)} streams</> : null}
         </small>
       </div>
-      <div className="actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div className="actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onClick={(e) => e.stopPropagation()}>
         <button className="btn primary" onClick={() => playTrack(track.id, queueIds)}>Play</button>
         <button className="btn ghost" onClick={() => addToQueue(track.id)}>Add to queue</button>
         {action}

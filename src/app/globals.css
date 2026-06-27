@@ -87,7 +87,28 @@ img { display: block; max-width: 100%; }
   transition: .16s ease; min-height: 42px;
 }
 .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.25); }
-.btn.primary { background: linear-gradient(135deg, var(--primary), #6d28d9); border-color: transparent; }
+.btn.primary {
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #4f46e5 100%) !important;
+  background-size: 200% auto !important; 
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25) !important; 
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn.primary:hover {
+  background-position: right center !important; 
+  transform: translateY(-2px) !important; 
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important; 
+  filter: brightness(1.1) !important;
+}
+
+.btn.primary:active {
+  transform: translateY(0px) !important;
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3) !important;
+}
 .btn.secondary { background: rgba(6,182,212,.14); border-color: rgba(6,182,212,.35); color: #cffafe; }
 .btn.danger { background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.35); color: #fecaca; }
 .btn.ghost { background: transparent; }
@@ -126,7 +147,92 @@ tr:last-child td { border-bottom: 0; }
 .player-side { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .auth-panel { width: min(100%, 980px); display: grid; grid-template-columns: 1fr 1.2fr; border-radius: 32px; overflow: hidden; border: 1px solid var(--border); background: rgba(255,255,255,.05); box-shadow: var(--shadow); }
-.auth-hero { padding: 42px; background: linear-gradient(145deg, rgba(139,92,246,.56), rgba(6,182,212,.28)); display: flex; flex-direction: column; justify-content: space-between; min-height: 680px; }
+
+.auth-panel .page-title {
+  font-size: 24px !important;       
+  font-weight: 700 !important;       
+  letter-spacing: -0.5px !important; 
+  line-height: 1 !important;
+  background: linear-gradient(135deg, #ffffff 60%, #a855f7 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+
+.brand-logo-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  width: 40px !important;            
+  height: 160px !important;         
+  
+  background: rgba(168, 85, 247, 0.1) !important;
+  border: 1px solid rgba(168, 85, 247, 0.25) !important;
+  border-radius: 12px !important; 
+}
+
+
+.brand-logo-box .main-note {
+  font-size: 16px !important;
+  color: #a855f7 !important;        
+  z-index: 2;
+}
+
+
+.brand-logo-box .wave-ring {
+  position: absolute;
+  font-size: 28px !important;
+  color: rgba(99, 102, 241, 0.2) !important; 
+  animation: fa-spin 12s linear infinite;    
+  z-index: 1;
+}
+
+.auth-hero .page-title {
+  font-size: 2.8rem !important;     
+  font-weight: 800 !important;       
+  letter-spacing: -1.5px !important; 
+  margin: 0 0 16px 0 !important;
+  line-height: 1.2 !important;
+  
+  background: linear-gradient(
+    120deg, 
+    #ffffff 0%, 
+    #a855f7 30%, 
+    #6366f1 70%, 
+    #ffffff 100%
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  
+
+  animation: shineGradient 6s linear infinite !important;
+  
+  
+  filter: drop-shadow(0 4px 12px rgba(168, 85, 247, 0.25)) !important;
+}
+
+
+@keyframes shineGradient {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+
+.auth-hero {
+  padding-left: 24px !important;  
+  margin-top: 40px !important;     
+  margin-bottom: 24px !important;   
+  display: block !important;
+}
+
+.auth-hero .page-title {
+  text-align: left !important;
+  display: inline-block !important;
+}
 .auth-body { padding: 34px; }
 .tabs { display: flex; gap: 8px; background: rgba(255,255,255,.05); padding: 6px; border-radius: 18px; margin-bottom: 20px; }
 .tab { flex: 1; padding: 10px; border: 0; border-radius: 13px; background: transparent; color: var(--subtle); }
@@ -269,6 +375,66 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   word-break: break-word;
 }
 .input[type="number"] { font-variant-numeric: tabular-nums; }
+
+.auth-body .card div[style*="grid"] button.btn.ghost {
+  display: grid !important;
+  grid-auto-flow: column !important; 
+  place-items: center !important;    
+  align-content: center !important;  
+  justify-content: center !important;
+  
+  font-size: 14px !important;     
+  gap: 6px !important;              
+  
+  padding: 0 12px !important;
+  height: 44px !important;         
+  line-height: 0 !important;  
+}
+
+
+.auth-body .card div[style*="grid"] button.btn.ghost strong {
+  font-weight: 600 !important;
+  color: inherit !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important; 
+}
+
+.auth-body .card div[style*="grid"] button.btn.ghost i {
+  font-size: 15px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+}
+
+.auth-body .card div[style*="grid"] button.btn.ghost {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  gap: 8px !important;
+  padding: 0 16px !important;
+  height: 48px !important;
+  width: 100% !important;
+  line-height: normal !important;
+  overflow: hidden !important;
+}
+
+.auth-body .card div[style*="grid"] button.btn.ghost i,
+.auth-body .card div[style*="grid"] button.btn.ghost strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  
+  transform: translateY(-3px) !important; 
+}
+
+.auth-body .card div[style*="grid"] button.btn.ghost strong {
+  font-weight: 600 !important;
+  color: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
 @media (max-width: 880px) {
   .dashboard-stats { grid-template-columns: 1fr; }

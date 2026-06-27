@@ -101,7 +101,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     const handleTimeUpdate = () => {
       if (streamCounted) return;
 
-      if (audioRef.current!.currentTime >= 5) {
+      if (audioRef.current!.currentTime >= 10) {
         const tracks = getCollection('tracks');
 
         const updatedTracks = tracks.map((t: Track) =>

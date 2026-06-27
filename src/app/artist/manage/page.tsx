@@ -15,6 +15,7 @@ export default function ArtistManagePage() {
   const { currentUser } = useAuth();
   const [tracks, setTracks] = useState<Track[]>(getCollection('tracks'));
   const [albums, setAlbums] = useState<Album[]>(getCollection('albums'));
+  const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const artists = getCollection('artists') as Artist[];
 
   const artist = currentUser?.artistId
@@ -31,6 +32,10 @@ export default function ArtistManagePage() {
   const mockIncome = totalStreams * 900;
   const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
 
+  const editTrack = (track: Track) => {
+    setEditingTrack(track);
+  };
+
   if (!currentUser) return <AppShell><div /></AppShell>;
 
   if (!canManageWorks(currentUser)) {
@@ -43,63 +48,134 @@ export default function ArtistManagePage() {
   }
 
   const publish = async (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (!artist) return;
+    if (!artist) return;
 
-  const formElement = event.currentTarget;
-  const form = new FormData(formElement);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
-  const title = String(form.get('title'));
-  const type = String(form.get('type')) as 'album' | 'single';
+    const title = String(form.get('title'));
+    const type = String(form.get('type')) as 'album' | 'single';
+    const genre = String(form.get('genre'));
+    const lyrics = String(form.get('lyrics'));
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = reject;
-    });
-
-  const audioFile = form.get('audio');
-  const coverFile = form.get('cover');
-
-  const audioUrl =
-  audioFile instanceof File
-    ? URL.createObjectURL(audioFile)
-    : '';
-
-  const coverUrl =
-    coverFile instanceof File ? await fileToBase64(coverFile) : '';
-
-  const track: Track = {
-    id: newId('track'),
-    title,
-    artistId: artist.id,
-    coverUrl,
-    audioUrl,
-    duration: Number(form.get('duration')) || 180,
-    releaseDate:
-      String(form.get('releaseDate')) ||
-      new Date().toISOString().slice(0, 10),
-    listeners: 0,
-    streams: 0,
-    lyrics: String(form.get('lyrics')),
-    genre: String(form.get('genre')),
-    collaborators: String(form.get('collaborators'))
+    const collaborators = String(form.get('collaborators'))
       .split(',')
       .map((x) => x.trim())
-      .filter(Boolean),
+      .filter(Boolean);
+
+    const releaseDate =
+      String(form.get('releaseDate')) ||
+      new Date().toISOString().slice(0, 10);
+
+    // =========================
+    // EDIT MODE
+    // =========================
+    
+    const fileToBase64 = (file: File): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+      });
+
+    const audioFile = form.get('audio');
+    const coverFile = form.get('cover');
+
+    const getAudioDuration = (url: string): Promise<number> =>
+      new Promise((resolve) => {
+        const audio = new Audio(url);
+
+        audio.onloadedmetadata = () => {
+          resolve(Math.round(audio.duration));
+        };
+
+        audio.onerror = () => resolve(0);
+      });
+
+    const audioUrl =
+      audioFile instanceof File
+        ? URL.createObjectURL(audioFile)
+        : "";
+
+    const duration =
+      audioUrl
+        ? await getAudioDuration(audioUrl)
+        : 0;
+
+    const coverUrl =
+      coverFile instanceof File
+        ? await fileToBase64(coverFile)
+        : "";
+    
+    if (editingTrack) {
+      let newCoverUrl = editingTrack.coverUrl;
+      let newAudioUrl = editingTrack.audioUrl;
+      let newDuration = editingTrack.duration;
+
+      if (coverFile instanceof File && coverFile.size > 0) {
+        newCoverUrl = await fileToBase64(coverFile);
+      }
+
+      if (audioFile instanceof File && audioFile.size > 0) {
+        newAudioUrl = URL.createObjectURL(audioFile);
+        newDuration = await getAudioDuration(newAudioUrl);
+      }
+
+      const updatedTracks = tracks.map((t) =>
+        t.id === editingTrack.id
+          ? {
+              ...t,
+              title,
+              genre,
+              lyrics,
+              collaborators,
+              releaseDate,
+              coverUrl: newCoverUrl,
+              audioUrl: newAudioUrl,
+              duration: newDuration,
+            }
+          : t
+      );
+
+      setTracks(updatedTracks);
+      setCollection("tracks", updatedTracks);
+
+      setEditingTrack(null);
+      formElement.reset();
+      return;
+    }
+    
+    // =========================
+    // NEW TRACK
+    // =========================
+
+    const track: Track = {
+      id: newId('track'),
+      title,
+      artistId: artist.id,
+      coverUrl,
+      audioUrl,
+      duration,
+      releaseDate,
+      listeners: 0,
+      streams: 0,
+      lyrics,
+      genre,
+      collaborators,
+    };
+
+    const nextTracks = [...tracks, track];
+
+    setTracks(nextTracks);
+    setCollection('tracks', nextTracks);
+
+    formElement.reset();
+    setEditingTrack(null);
   };
 
-  const nextTracks = [...tracks, track];
-
-  setTracks(nextTracks);
-  setCollection('tracks', nextTracks);
-
-  // ✅ safe reset (فقط همین)
-  formElement.reset();
-};
   const removeTrack = (trackId: string) => {
     const nextTracks = tracks.filter((t) => t.id !== trackId);
 
@@ -158,7 +234,11 @@ export default function ArtistManagePage() {
           <div className="form-grid">
             <div className="form-row">
               <label className="label">Track title</label>
-              <input className="input" name="title" required />
+              <input
+                className="input"
+                name="title"
+                defaultValue={editingTrack?.title}
+              />
             </div>
 
             <div className="form-row">
@@ -176,7 +256,11 @@ export default function ArtistManagePage() {
 
             <div className="form-row">
               <label className="label">Genre</label>
-              <input className="input" name="genre" required />
+              <input
+                className="input"
+                name="genre"
+                defaultValue={editingTrack?.genre}
+              />
             </div>
 
             <div className="form-row">
@@ -185,31 +269,46 @@ export default function ArtistManagePage() {
             </div>
 
             <div className="form-row">
-              <label className="label">Duration</label>
-              <input className="input" name="duration" type="number" />
+              <label className="label">Audio file</label>
+              <input
+                className="input"
+                name="audio"
+                type="file"
+                accept="audio/*"
+              />
             </div>
 
             <div className="form-row">
-              <label className="label">Audio file</label>
-              <input className="input" name="audio" type="file" />
+              <label className="label">Cover image</label>
+              <input
+                className="input"
+                name="cover"
+                type="file"
+                accept="image/*"
+              />
+            </div>
+
+            <div className="form-row">
+              <label className="label">Collaborators</label>
+              <input
+                className="input"
+                name="collaborators"
+                defaultValue={editingTrack?.collaborators?.join(', ') ?? ''}
+              />
+            </div>
+
+            <div className="form-row">
+              <label className="label">Lyrics</label>
+              <textarea
+                className="textarea"
+                name="lyrics"
+                defaultValue={editingTrack?.lyrics}
+              />
             </div>
           </div>
-          <div className="form-row">
-          <label className="label">Cover image</label>
-          <input className="input" name="cover" type="file" accept="image/*" />
-        </div>
-
-          <div className="form-row">
-            <label className="label">Collaborators</label>
-            <input className="input" name="collaborators" />
-          </div>
-
-          <div className="form-row">
-            <label className="label">Lyrics</label>
-            <textarea className="textarea" name="lyrics" />
-          </div>
-
-          <button className="btn primary">Publish mock release</button>
+          <button className="btn primary">
+            {editingTrack ? "Save changes" : "Publish"}
+          </button>
         </form>
       </section>
 
@@ -225,12 +324,21 @@ export default function ArtistManagePage() {
               track={track}
               queueIds={artistTracks.map((item) => item.id)}
               action={
-                <button
-                  className="btn danger"
-                  onClick={() => removeTrack(track.id)}
-                >
-                  Delete / unpublish
-                </button>
+                <>
+                  <button
+                    className="btn"
+                    onClick={() => editTrack(track)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="btn danger"
+                    onClick={() => removeTrack(track.id)}
+                  >
+                    Delete / unpublish
+                  </button>
+                </>
               }
             />
           ))

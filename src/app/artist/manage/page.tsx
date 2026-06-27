@@ -87,24 +87,8 @@ export default function ArtistManagePage() {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
 
-    const title = String(form.get('title'));
     const type = String(form.get('type')) as 'album' | 'single';
-    const genre = String(form.get('genre'));
-    const lyrics = String(form.get('lyrics'));
 
-    const collaborators = String(form.get('collaborators'))
-      .split(',')
-      .map((x) => x.trim())
-      .filter(Boolean);
-
-    const releaseDate =
-      String(form.get('releaseDate')) ||
-      new Date().toISOString().slice(0, 10);
-
-    // =========================
-    // EDIT MODE
-    // =========================
-    
     const fileToBase64 = (file: File): Promise<string> =>
       new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -113,36 +97,30 @@ export default function ArtistManagePage() {
         reader.onerror = reject;
       });
 
-    const audioFile = form.get('audio');
-    const coverFile = form.get('cover');
-
     const getAudioDuration = (url: string): Promise<number> =>
       new Promise((resolve) => {
         const audio = new Audio(url);
-
         audio.onloadedmetadata = () => {
           resolve(Math.round(audio.duration));
         };
-
         audio.onerror = () => resolve(0);
       });
 
-    const audioUrl =
-      audioFile instanceof File
-        ? URL.createObjectURL(audioFile)
-        : "";
-
-    const duration =
-      audioUrl
-        ? await getAudioDuration(audioUrl)
-        : 0;
-
-    const coverUrl =
-      coverFile instanceof File
-        ? await fileToBase64(coverFile)
-        : "";
-    
+    // =========================
+    // EDIT MODE
+    // =========================
     if (editingTrack) {
+      const title = String(form.get('title'));
+      const genre = String(form.get('genre'));
+      const lyrics = String(form.get('lyrics'));
+      const collaborators = String(form.get('collaborators'))
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+      const releaseDate = String(form.get('releaseDate')) || new Date().toISOString().slice(0, 10);
+      const audioFile = form.get('audio');
+      const coverFile = form.get('cover');
+
       let newCoverUrl = editingTrack.coverUrl;
       let newAudioUrl = editingTrack.audioUrl;
       let newDuration = editingTrack.duration;
@@ -283,6 +261,20 @@ export default function ArtistManagePage() {
     // =========================
     // NEW SINGLE
     // =========================
+    const title = String(form.get('title'));
+    const genre = String(form.get('genre'));
+    const lyrics = String(form.get('lyrics'));
+    const collaborators = String(form.get('collaborators'))
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
+    const releaseDate = String(form.get('releaseDate')) || new Date().toISOString().slice(0, 10);
+    const audioFile = form.get('audio');
+    const coverFile = form.get('cover');
+
+    const audioUrl = audioFile instanceof File ? URL.createObjectURL(audioFile) : "";
+    const duration = audioUrl ? await getAudioDuration(audioUrl) : 0;
+    const coverUrl = coverFile instanceof File ? await fileToBase64(coverFile) : "";
 
     const track: Track = {
       id: newId('track'),
@@ -384,173 +376,182 @@ export default function ArtistManagePage() {
               </select>
             </div>
 
-            <div className="form-row">
-              <label className="label">Genre</label>
-              <input
-                className="input"
-                name="albumGenre"
-                defaultValue={editingTrack?.genre}
-              />
-            </div>
+            {releaseType === 'single' ? (
+              // Single form
+              <>
+                <div className="form-row">
+                  <label className="label">Track title</label>
+                  <input
+                    className="input"
+                    name="title"
+                    defaultValue={editingTrack?.title}
+                  />
+                </div>
 
-            <div className="form-row">
-              <label className="label">Release date</label>
-              <input className="input" name="albumReleaseDate" type="date" />
-            </div>
+                <div className="form-row">
+                  <label className="label">Genre</label>
+                  <input
+                    className="input"
+                    name="genre"
+                    defaultValue={editingTrack?.genre}
+                  />
+                </div>
 
-            <div className="form-row">
-              <label className="label">Album Cover</label>
-              <input
-                className="input"
-                name="albumCover"
-                type="file"
-                accept="image/*"
-              />
-            </div>
-          </div>
+                <div className="form-row">
+                  <label className="label">Release date</label>
+                  <input className="input" name="releaseDate" type="date" />
+                </div>
 
-          {releaseType === 'single' ? (
-            // Single form
-            <div className="form-grid">
-              <div className="form-row">
-                <label className="label">Track title</label>
-                <input
-                  className="input"
-                  name="title"
-                  defaultValue={editingTrack?.title}
-                />
-              </div>
+                <div className="form-row">
+                  <label className="label">Cover image</label>
+                  <input
+                    className="input"
+                    name="cover"
+                    type="file"
+                    accept="image/*"
+                  />
+                </div>
 
-              <div className="form-row">
-                <label className="label">Audio file</label>
-                <input
-                  className="input"
-                  name="audio"
-                  type="file"
-                  accept="audio/*"
-                />
-              </div>
+                <div className="form-row">
+                  <label className="label">Audio file</label>
+                  <input
+                    className="input"
+                    name="audio"
+                    type="file"
+                    accept="audio/*"
+                  />
+                </div>
 
-              <div className="form-row">
-                <label className="label">Lyrics</label>
-                <textarea
-                  className="textarea"
-                  name="lyrics"
-                  defaultValue={editingTrack?.lyrics}
-                />
-              </div>
+                <div className="form-row">
+                  <label className="label">Lyrics</label>
+                  <textarea
+                    className="textarea"
+                    name="lyrics"
+                    defaultValue={editingTrack?.lyrics}
+                  />
+                </div>
 
-              <div className="form-row">
-                <label className="label">Collaborators</label>
-                <input
-                  className="input"
-                  name="collaborators"
-                  defaultValue={editingTrack?.collaborators?.join(', ') ?? ''}
-                />
-              </div>
+                <div className="form-row">
+                  <label className="label">Collaborators</label>
+                  <input
+                    className="input"
+                    name="collaborators"
+                    defaultValue={editingTrack?.collaborators?.join(', ') ?? ''}
+                  />
+                </div>
+              </>
+            ) : (
+              // Album form
+              <>
+                <div className="form-row">
+                  <label className="label">Genre</label>
+                  <input
+                    className="input"
+                    name="albumGenre"
+                    defaultValue={editingTrack?.genre}
+                  />
+                </div>
 
-              <div className="form-row">
-                <label className="label">Cover image</label>
-                <input
-                  className="input"
-                  name="cover"
-                  type="file"
-                  accept="image/*"
-                />
-              </div>
+                <div className="form-row">
+                  <label className="label">Release date</label>
+                  <input className="input" name="albumReleaseDate" type="date" />
+                </div>
 
-              <div className="form-row">
-                <label className="label">Release date</label>
-                <input className="input" name="releaseDate" type="date" />
-              </div>
-            </div>
-          ) : (
-            // Album form
-            <>
-              <h3 style={{ marginTop: 20 }}>Tracks</h3>
+                <div className="form-row">
+                  <label className="label">Album Cover</label>
+                  <input
+                    className="input"
+                    name="albumCover"
+                    type="file"
+                    accept="image/*"
+                  />
+                </div>
 
-              {albumTracks.map((track, index) => (
-                <div
-                  key={index}
-                  className="card"
-                  style={{ marginBottom: 20 }}
-                >
-                  <h4>Track {index + 1}</h4>
+                <h3 style={{ marginTop: 20 }}>Tracks</h3>
 
-                  <div className="form-grid">
-                    <div className="form-row">
-                      <label className="label">Title</label>
-                      <input
-                        className="input"
-                        name={`trackTitle-${index}`}
-                      />
-                    </div>
+                {albumTracks.map((track, index) => (
+                  <div
+                    key={index}
+                    className="card"
+                    style={{ marginBottom: 20 }}
+                  >
+                    <h4>Track {index + 1}</h4>
 
-                    <div className="form-row">
-                      <label className="label">Genre</label>
-                      <input
-                        className="input"
-                        name={`trackGenre-${index}`}
-                      />
-                    </div>
+                    <div className="form-grid">
+                      <div className="form-row">
+                        <label className="label">Title</label>
+                        <input
+                          className="input"
+                          name={`trackTitle-${index}`}
+                        />
+                      </div>
 
-                    <div className="form-row">
-                      <label className="label">Release date</label>
-                      <input
-                        className="input"
-                        type="date"
-                        name={`trackReleaseDate-${index}`}
-                      />
-                    </div>
+                      <div className="form-row">
+                        <label className="label">Genre</label>
+                        <input
+                          className="input"
+                          name={`trackGenre-${index}`}
+                        />
+                      </div>
 
-                    <div className="form-row">
-                      <label className="label">Collaborators</label>
-                      <input
-                        className="input"
-                        name={`trackCollaborators-${index}`}
-                      />
-                    </div>
+                      <div className="form-row">
+                        <label className="label">Release date</label>
+                        <input
+                          className="input"
+                          type="date"
+                          name={`trackReleaseDate-${index}`}
+                        />
+                      </div>
 
-                    <div className="form-row">
-                      <label className="label">Lyrics</label>
-                      <textarea
-                        className="textarea"
-                        name={`trackLyrics-${index}`}
-                      />
-                    </div>
+                      <div className="form-row">
+                        <label className="label">Collaborators</label>
+                        <input
+                          className="input"
+                          name={`trackCollaborators-${index}`}
+                        />
+                      </div>
 
-                    <div className="form-row">
-                      <label className="label">Audio file</label>
-                      <input
-                        className="input"
-                        type="file"
-                        accept="audio/*"
-                        name={`trackAudio-${index}`}
-                      />
-                    </div>
+                      <div className="form-row">
+                        <label className="label">Lyrics</label>
+                        <textarea
+                          className="textarea"
+                          name={`trackLyrics-${index}`}
+                        />
+                      </div>
 
-                    <div className="form-row">
-                      <label className="label">Track Cover</label>
-                      <input
-                        className="input"
-                        type="file"
-                        accept="image/*"
-                        name={`trackCover-${index}`}
-                      />
+                      <div className="form-row">
+                        <label className="label">Audio file</label>
+                        <input
+                          className="input"
+                          type="file"
+                          accept="audio/*"
+                          name={`trackAudio-${index}`}
+                        />
+                      </div>
+
+                      <div className="form-row">
+                        <label className="label">Track Cover</label>
+                        <input
+                          className="input"
+                          type="file"
+                          accept="image/*"
+                          name={`trackCover-${index}`}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              <button
-                type="button"
-                className="btn"
-                onClick={addAlbumTrack}
-              >
-                + Add Track
-              </button>
-            </>
-          )}
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={addAlbumTrack}
+                >
+                  + Add Track
+                </button>
+              </>
+            )}
+          </div>
 
           <button className="btn primary" style={{ marginTop: 20 }}>
             {editingTrack ? "Save changes" : "Publish"}

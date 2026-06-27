@@ -12,9 +12,12 @@ import type { Album, Artist, Track } from '@/types/domain';
 export default function TrackCard({ track, queueIds, action }: { track: Track; queueIds?: string[]; action?: React.ReactNode }) {
   const { currentUser } = useAuth();
   const { playTrack, addToQueue } = usePlayer();
-  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
-  
-  const { artist, album } = useMemo(() => {
+const showAnalytics = currentUser
+  ? canSeeAnalytics(
+      currentUser.role,
+      currentUser.subscription
+    )
+  : false;  const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
     const albums = getCollection('albums') as Album[];
     return {

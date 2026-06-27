@@ -55,6 +55,13 @@ export default function MiniPlayer() {
               {artist ? <Link href={`/artists/${artist.id}`}>{artist.name}</Link> : 'Unknown artist'}
               {album ? <> · <Link href={`/albums/${album.id}`}>{album.title}</Link></> : null}
             </div>
+           {currentUser &&
+canSeeAnalytics(currentUser.role, currentUser.subscription) ? (
+  <small className="badge">
+    {currentTrack.listeners.toLocaleString('en-US')} listeners ·{" "}
+    {currentTrack.streams.toLocaleString("en-US")} streams
+  </small>
+) : null}
             
             {currentUser && currentUser.subscription === 'gold' ? (
               <small className="badge" style={{ backgroundColor: '#eab308', color: '#000', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

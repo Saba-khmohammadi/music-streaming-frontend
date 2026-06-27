@@ -88,16 +88,30 @@ function LoginContent() {
     <main className="auth-page">
       <section className="auth-panel">
         <aside className="auth-hero">
-          <div>
-            <div className="brand-logo">♫</div>
-            <h1 className="page-title">Music Streaming Service</h1>
-            <p className="page-description">Project Phase 1: mock UI for listener, artist, support, and system admin roles.</p>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          width: '100%', 
+          marginBottom: '24px', 
+          padding: '0 8px',
+          gap: '16px' 
+        }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            
+            <div className="brand-logo-box">
+              <i className="fas fa-music main-note"></i>
+              <i className="fas fa-circle-notch wave-ring"></i>
+            </div>
+            
+            <h1 className="page-title" style={{ margin: 0 }}>
+              Music Streaming Service
+            </h1>
           </div>
-          <div className="grid">
-            <span className="badge">React / Next.js</span>
-            <span className="badge">LocalStorage Mock Data</span>
-            <span className="badge warning">Responsive LTR UI</span>
-          </div>
+
+        </div>
+          
         </aside>
         <div className="auth-body">
           <div className="tabs">
@@ -114,9 +128,66 @@ function LoginContent() {
               <div className="form-row"><label className="label">Password</label><input className="input" name="password" type="password" defaultValue="gold123" required /></div>
               <button className="btn primary block">Enter the app</button>
               <button type="button" className="btn ghost block" onClick={() => setTab('reset')}>Forgot password</button>
-              <div className="card">
-                <strong>Quick accounts</strong>
-                <p className="muted">admin@example.com / admin123 — support@example.com / support123 — artist@example.com / artist123</p>
+              <div className="card" style={{ marginTop: 14 }}>
+                <strong style={{ display: 'block', marginBottom: 12, fontSize: '13px', color: 'var(--muted)' }}>
+                  <i className="fas fa-magic" style={{ marginRight: '6px', color: '#6366f1' }}></i> 
+                  Quick Auto-Fill Login
+                </strong>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  
+                  <button 
+                    type="button"
+                    className="btn ghost" 
+                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
+                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
+                      if (emailInput && passwordInput) {
+                        emailInput.value = 'admin@example.com';
+                        passwordInput.value = 'admin123';
+                      }
+                    }}
+                  >
+                    <i className="fas fa-user-shield" style={{ fontSize: '16px', color: '#f43f5e' }}></i>
+                    <strong>Admin</strong>
+                  </button>
+
+                  <button 
+                    type="button"
+                    className="btn ghost" 
+                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
+                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
+                      if (emailInput && passwordInput) {
+                        emailInput.value = 'support@example.com';
+                        passwordInput.value = 'support123';
+                      }
+                    }}
+                  >
+                    <i className="fas fa-headset" style={{ fontSize: '16px', color: '#3b82f6' }}></i>
+                    <strong>Support</strong>
+                  </button>
+
+                  <button 
+                    type="button"
+                    className="btn ghost" 
+                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
+                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
+                      if (emailInput && passwordInput) {
+                        emailInput.value = 'artist@example.com';
+                        passwordInput.value = 'artist123';
+                      }
+                    }}
+                  >
+                    <i className="fas fa-music" style={{ fontSize: '16px', color: '#10b981' }}></i>
+                    <strong>Artist</strong>
+                  </button>
+
+                </div>
               </div>
             </form>
           ) : null}
@@ -131,7 +202,28 @@ function LoginContent() {
                 <div className="form-row"><label className="label">Birth date</label><input className="input" name="birthDate" type="date" required /></div>
                 <div className="form-row"><label className="label">Gender</label><select className="select" name="gender"><option>Female</option><option>Male</option><option>Prefer not to say</option></select></div>
               </div>
-              <label className="muted"><input name="privacy" type="checkbox" /> I accept the <button type="button" className="btn ghost" onClick={() => setPrivacyOpen(true)}>Privacy Policy</button>.</label>
+
+              <label className="muted" style={{ display: 'block', margin: '14px 0', cursor: 'pointer' }}>
+                <input name="privacy" type="checkbox" style={{ marginRight: '6px' }} /> 
+                I accept the{' '}
+                <button 
+                  type="button" 
+                  onClick={() => setPrivacyOpen(true)} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: '#3b82f6', 
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    font: 'inherit',
+                    display: 'inline'
+                  }}
+                >
+                  Privacy Policy
+                </button>.
+              </label>
+
               <button className="btn primary block">Sign up and enter</button>
             </form>
           ) : null}
@@ -162,8 +254,29 @@ function LoginContent() {
         </div>
       </section>
       {privacyOpen ? (
-        <Modal title="Privacy Policy" onClose={() => setPrivacyOpen(false)}>
-          <p className="page-description">This Phase 1 version uses mock data. Entered information is stored only in the browser LocalStorage and is not sent to a server.</p>
+        <Modal title="Privacy Policy & Data Security" onClose={() => setPrivacyOpen(false)}>
+          <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>1. Local Storage Only</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                Any information, configurations, or simulation accounts you create are stored exclusively in your browser's <strong>LocalStorage</strong>.
+              </p>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>2. Zero Server Transmission</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                No data is transmitted, uploaded, or leaked to any external cloud, database, or backend server. The application runs completely isolated on your client side.
+              </p>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>3. Data Control</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                Since the data lives entirely in your browser, clearing your browsing data or site cache will permanently reset the application and remove your simulated history.
+              </p>
+            </div>
+          </div>
         </Modal>
       ) : null}
     </main>

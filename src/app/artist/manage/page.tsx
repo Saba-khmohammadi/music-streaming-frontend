@@ -25,7 +25,9 @@ export default function ArtistManagePage() {
       genre: '',
       lyrics: '',
       collaborators: '',
-      audio: null as File | null
+      audio: null as File | null,
+      cover: null as File | null,
+      releaseDate: ''
     }
   ]);
   const artist = currentUser?.artistId
@@ -36,18 +38,22 @@ export default function ArtistManagePage() {
     () => (artist ? tracks.filter((track) => track.artistId === artist.id) : []),
     [artist, tracks]
   );
+  
   const addAlbumTrack = () => {
-  setAlbumTracks((prev) => [
-    ...prev,
-    {
-      title: '',
-      genre: '',
-      lyrics: '',
-      collaborators: '',
-      audio: null
-    }
+    setAlbumTracks((prev) => [
+      ...prev,
+      {
+        title: '',
+        genre: '',
+        lyrics: '',
+        collaborators: '',
+        audio: null,
+        cover: null,
+        releaseDate: ''
+      }
     ]);
   };
+  
   const totalStreams = artistTracks.reduce((sum, track) => sum + track.streams, 0);
   const totalListeners = artistTracks.reduce((sum, track) => sum + track.listeners, 0);
   const mockIncome = totalStreams * 900;
@@ -175,7 +181,107 @@ export default function ArtistManagePage() {
     }
     
     // =========================
-    // NEW TRACK
+    // NEW ALBUM
+    // =========================
+    if (type === "album") {
+      const albumId = newId("album");
+      const albumTitle = String(form.get('albumTitle'));
+      const albumGenre = String(form.get('albumGenre'));
+      const albumReleaseDate = String(form.get('albumReleaseDate')) || new Date().toISOString().slice(0, 10);
+      const albumCoverFile = form.get('albumCover');
+      const albumCoverUrl = albumCoverFile instanceof File ? await fileToBase64(albumCoverFile) : "";
+
+      const createdTracks: Track[] = [];
+
+      for (let i = 0; i < albumTracks.length; i++) {
+        const trackTitle = String(form.get(`trackTitle-${i}`));
+        const trackGenre = String(form.get(`trackGenre-${i}`));
+        const trackLyrics = String(form.get(`trackLyrics-${i}`));
+
+        const trackCollaborators = String(
+          form.get(`trackCollaborators-${i}`)
+        )
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean);
+
+        const trackReleaseDate =
+          String(form.get(`trackReleaseDate-${i}`)) ||
+          albumReleaseDate;
+
+        const audio = form.get(`trackAudio-${i}`);
+        const cover = form.get(`trackCover-${i}`);
+
+        const trackAudioUrl =
+          audio instanceof File
+            ? URL.createObjectURL(audio)
+            : "";
+
+        const trackDuration =
+          trackAudioUrl
+            ? await getAudioDuration(trackAudioUrl)
+            : 0;
+
+        const trackCoverUrl =
+          cover instanceof File
+            ? await fileToBase64(cover)
+            : albumCoverUrl;
+
+        createdTracks.push({
+          id: newId("track"),
+          albumId,
+          artistId: artist.id,
+          title: trackTitle,
+          genre: trackGenre,
+          lyrics: trackLyrics,
+          collaborators: trackCollaborators,
+          coverUrl: trackCoverUrl,
+          audioUrl: trackAudioUrl,
+          duration: trackDuration,
+          releaseDate: trackReleaseDate,
+          listeners: 0,
+          streams: 0
+        });
+      }
+
+      const album: Album = {
+        id: albumId,
+        title: albumTitle,
+        artistId: artist.id,
+        coverUrl: albumCoverUrl,
+        releaseDate: albumReleaseDate,
+        genre: albumGenre,
+        type: "album",
+        trackIds: createdTracks.map((t) => t.id)
+      };
+
+      const nextTracks = [...tracks, ...createdTracks];
+      const nextAlbums = [...albums, album];
+
+      setTracks(nextTracks);
+      setAlbums(nextAlbums);
+
+      setCollection("tracks", nextTracks);
+      setCollection("albums", nextAlbums);
+
+      formElement.reset();
+      setAlbumTracks([
+        {
+          title: "",
+          genre: "",
+          lyrics: "",
+          collaborators: "",
+          audio: null,
+          cover: null,
+          releaseDate: ""
+        }
+      ]);
+
+      return;
+    }
+    
+    // =========================
+    // NEW SINGLE
     // =========================
 
     const track: Track = {
@@ -259,123 +365,179 @@ export default function ArtistManagePage() {
         <form className="form" onSubmit={publish}>
           <div className="form-grid">
             <div className="form-row">
-              <label className="label">Track title</label>
-              <input
-                className="input"
-                name="title"
-                defaultValue={editingTrack?.title}
-              />
-            </div>
-
-            <div className="form-row">
-              <label className="label">Album / single title</label>
+              <label className="label">Album / Single title</label>
               <input className="input" name="albumTitle" />
             </div>
 
             <div className="form-row">
               <label className="label">Release type</label>
               <select
-              className="select"
-              name="type"
-              value={releaseType}
-              onChange={(e) =>
+                className="select"
+                name="type"
+                value={releaseType}
+                onChange={(e) =>
                   setReleaseType(e.target.value as 'single' | 'album')
-              }
-          >
-              <option value="single">Single</option>
-              <option value="album">Album</option>
-          </select>
+                }
+              >
+                <option value="single">Single</option>
+                <option value="album">Album</option>
+              </select>
             </div>
 
             <div className="form-row">
               <label className="label">Genre</label>
               <input
                 className="input"
-                name="genre"
+                name="albumGenre"
                 defaultValue={editingTrack?.genre}
               />
             </div>
 
             <div className="form-row">
               <label className="label">Release date</label>
-              <input className="input" name="releaseDate" type="date" />
+              <input className="input" name="albumReleaseDate" type="date" />
             </div>
 
             <div className="form-row">
-              <label className="label">Audio file</label>
+              <label className="label">Album Cover</label>
               <input
                 className="input"
-                name="audio"
-                type="file"
-                accept="audio/*"
-              />
-            </div>
-
-            <div className="form-row">
-              <label className="label">Cover image</label>
-              <input
-                className="input"
-                name="cover"
+                name="albumCover"
                 type="file"
                 accept="image/*"
               />
             </div>
-
-            <div className="form-row">
-              <label className="label">Collaborators</label>
-              <input
-                className="input"
-                name="collaborators"
-                defaultValue={editingTrack?.collaborators?.join(', ') ?? ''}
-              />
-            </div>
-
-            <div className="form-row">
-              <label className="label">Lyrics</label>
-              <textarea
-                className="textarea"
-                name="lyrics"
-                defaultValue={editingTrack?.lyrics}
-              />
-            </div>
           </div>
-          
-          {releaseType === 'album' && (
-            <>
-              <h3 style={{marginTop:20}}>Tracks</h3>
 
-              {albumTracks.map((track,index)=>(
+          {releaseType === 'single' ? (
+            // Single form
+            <div className="form-grid">
+              <div className="form-row">
+                <label className="label">Track title</label>
+                <input
+                  className="input"
+                  name="title"
+                  defaultValue={editingTrack?.title}
+                />
+              </div>
+
+              <div className="form-row">
+                <label className="label">Audio file</label>
+                <input
+                  className="input"
+                  name="audio"
+                  type="file"
+                  accept="audio/*"
+                />
+              </div>
+
+              <div className="form-row">
+                <label className="label">Lyrics</label>
+                <textarea
+                  className="textarea"
+                  name="lyrics"
+                  defaultValue={editingTrack?.lyrics}
+                />
+              </div>
+
+              <div className="form-row">
+                <label className="label">Collaborators</label>
+                <input
+                  className="input"
+                  name="collaborators"
+                  defaultValue={editingTrack?.collaborators?.join(', ') ?? ''}
+                />
+              </div>
+
+              <div className="form-row">
+                <label className="label">Cover image</label>
+                <input
+                  className="input"
+                  name="cover"
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+
+              <div className="form-row">
+                <label className="label">Release date</label>
+                <input className="input" name="releaseDate" type="date" />
+              </div>
+            </div>
+          ) : (
+            // Album form
+            <>
+              <h3 style={{ marginTop: 20 }}>Tracks</h3>
+
+              {albumTracks.map((track, index) => (
                 <div
                   key={index}
                   className="card"
-                  style={{marginBottom:20}}
+                  style={{ marginBottom: 20 }}
                 >
-                  <h4>Track {index+1}</h4>
+                  <h4>Track {index + 1}</h4>
 
-                  <div className="form-row">
-                    <label className="label">Title</label>
-                    <input
-                      className="input"
-                      name={`trackTitle-${index}`}
-                    />
-                  </div>
+                  <div className="form-grid">
+                    <div className="form-row">
+                      <label className="label">Title</label>
+                      <input
+                        className="input"
+                        name={`trackTitle-${index}`}
+                      />
+                    </div>
 
-                  <div className="form-row">
-                    <label className="label">Audio</label>
-                    <input
-                      className="input"
-                      type="file"
-                      accept="audio/*"
-                      name={`trackAudio-${index}`}
-                    />
-                  </div>
+                    <div className="form-row">
+                      <label className="label">Genre</label>
+                      <input
+                        className="input"
+                        name={`trackGenre-${index}`}
+                      />
+                    </div>
 
-                  <div className="form-row">
-                    <label className="label">Lyrics</label>
-                    <textarea
-                      className="textarea"
-                      name={`trackLyrics-${index}`}
-                    />
+                    <div className="form-row">
+                      <label className="label">Release date</label>
+                      <input
+                        className="input"
+                        type="date"
+                        name={`trackReleaseDate-${index}`}
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label className="label">Collaborators</label>
+                      <input
+                        className="input"
+                        name={`trackCollaborators-${index}`}
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label className="label">Lyrics</label>
+                      <textarea
+                        className="textarea"
+                        name={`trackLyrics-${index}`}
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label className="label">Audio file</label>
+                      <input
+                        className="input"
+                        type="file"
+                        accept="audio/*"
+                        name={`trackAudio-${index}`}
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <label className="label">Track Cover</label>
+                      <input
+                        className="input"
+                        type="file"
+                        accept="image/*"
+                        name={`trackCover-${index}`}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -390,7 +552,7 @@ export default function ArtistManagePage() {
             </>
           )}
 
-          <button className="btn primary">
+          <button className="btn primary" style={{ marginTop: 20 }}>
             {editingTrack ? "Save changes" : "Publish"}
           </button>
         </form>

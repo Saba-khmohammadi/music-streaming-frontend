@@ -288,6 +288,7 @@ export const notifications: AppNotification[] = [
 export const tickets: Ticket[] = [
   {
     id: 'TCK-1001',
+    userId: 'u-silver',
     userName: 'User Silver',
     subject: 'Track download issue',
     status: 'open',
@@ -299,6 +300,7 @@ export const tickets: Ticket[] = [
   },
   {
     id: 'TCK-1002',
+    userId: 'u-listener',
     userName: 'Listener Base',
     subject: 'Forgot password',
     status: 'answered',

@@ -98,6 +98,7 @@ export interface AppNotification {
 
 export interface Ticket {
   id: string;
+  userId?: string;
   userName: string;
   subject: string;
   status: TicketStatus;

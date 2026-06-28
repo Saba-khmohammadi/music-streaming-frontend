@@ -41,13 +41,42 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const shouldUseEnglishDefault = (user: User) => user.role === 'artist' || user.role === 'support' || user.role === 'admin';
 
-const normalizeEnglishDefaults = (nextUsers: User[]) => {
+const normalizeUsers = (nextUsers: User[], nextArtists: Artist[]) => {
   let changed = false;
   const normalized = nextUsers.map((user) => {
-    if (!shouldUseEnglishDefault(user) || user.preferences.language === 'en') return user;
-    changed = true;
-    return { ...user, preferences: { ...user.preferences, language: 'en' as const } };
+    let normalizedUser = user;
+
+    if (shouldUseEnglishDefault(normalizedUser) && normalizedUser.preferences.language !== 'en') {
+      changed = true;
+      normalizedUser = { ...normalizedUser, preferences: { ...normalizedUser.preferences, language: 'en' as const } };
+    }
+
+    if (normalizedUser.role === 'artist' && normalizedUser.artistId) {
+      const linkedArtist = nextArtists.find((artist) => artist.id === normalizedUser.artistId);
+      if (linkedArtist) {
+        const nextFollowers = linkedArtist.followers;
+        const nextVerifiedArtist = linkedArtist.verified;
+        const nextAvatarUrl = normalizedUser.avatarUrl || linkedArtist.avatarUrl;
+
+        if (
+          normalizedUser.followers !== nextFollowers ||
+          normalizedUser.verifiedArtist !== nextVerifiedArtist ||
+          normalizedUser.avatarUrl !== nextAvatarUrl
+        ) {
+          changed = true;
+          normalizedUser = {
+            ...normalizedUser,
+            followers: nextFollowers,
+            verifiedArtist: nextVerifiedArtist,
+            avatarUrl: nextAvatarUrl
+          };
+        }
+      }
+    }
+
+    return normalizedUser;
   });
+
   if (changed) setCollection('users', normalized);
   return normalized;
 };
@@ -59,8 +88,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setReady] = useState(false);
 
   const refreshUsers = useCallback(() => {
-    setUsers(normalizeEnglishDefaults(getCollection('users')));
-    setArtists(getCollection('artists'));
+    const nextArtists = getCollection('artists');
+    const nextUsers = normalizeUsers(getCollection('users'), nextArtists);
+    setArtists(nextArtists);
+    setUsers(nextUsers);
   }, []);
 
   useEffect(() => {
@@ -207,7 +238,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout();
   }, [currentUserId, logout, persistUsers, users]);
 
-  const currentUser = useMemo(() => users.find((item) => item.id === currentUserId) ?? null, [currentUserId, users]);
+  const currentUser = useMemo(() => {
+    const activeUser = users.find((item) => item.id === currentUserId) ?? null;
+    if (!activeUser || activeUser.role !== 'artist' || !activeUser.artistId) return activeUser;
+
+    const linkedArtist = artists.find((artist) => artist.id === activeUser.artistId);
+    if (!linkedArtist) return activeUser;
+
+    return {
+      ...activeUser,
+      followers: linkedArtist.followers,
+      verifiedArtist: linkedArtist.verified,
+      avatarUrl: activeUser.avatarUrl || linkedArtist.avatarUrl
+    };
+  }, [artists, currentUserId, users]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

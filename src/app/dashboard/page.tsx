@@ -327,12 +327,33 @@ export default function DashboardPage() {
 
   const answerTicket = (ticketId: string) => {
     const body = ticketReplies[ticketId]?.trim();
-    if (!body) return;
-    persistTickets(tickets.map((ticket) => ticket.id === ticketId ? {
-      ...ticket,
+    const ticket = tickets.find((item) => item.id === ticketId);
+    if (!body || !ticket) return;
+
+    const createdAt = new Date().toISOString();
+    persistTickets(tickets.map((item) => item.id === ticketId ? {
+      ...item,
       status: 'answered',
-      messages: [...ticket.messages, { from: 'support', body, createdAt: new Date().toISOString() }]
-    } : ticket));
+      messages: [...item.messages, { from: 'support', body, createdAt }]
+    } : item));
+
+    const owner = users.find((user) => user.id === ticket.userId) ?? users.find((user) => user.displayName === ticket.userName);
+    if (owner) {
+      const ownerLanguage = owner.preferences.language;
+      const notifications = getCollection('notifications') as AppNotification[];
+      const nextNotification: AppNotification = {
+        id: newId('notif'),
+        role: owner.role,
+        userId: owner.id,
+        title: ownerLanguage === 'fa' ? 'پاسخ پشتیبانی' : 'Support reply',
+        message: ownerLanguage === 'fa' ? `پشتیبان به تیکت «${ticket.subject}» پاسخ داد.` : `Support replied to your ticket “${ticket.subject}”.`,
+        link: '/support',
+        isRead: false,
+        createdAt
+      };
+      setCollection('notifications', [nextNotification, ...notifications]);
+    }
+
     setTicketReplies((current) => ({ ...current, [ticketId]: '' }));
   };
 

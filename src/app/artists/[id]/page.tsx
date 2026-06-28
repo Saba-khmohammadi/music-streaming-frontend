@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import AlbumCard from '@/components/AlbumCard';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
@@ -9,15 +8,15 @@ import { useAuth } from '@/context/AuthContext';
 import { canSeeAnalytics } from '@/lib/rules';
 import { getCollection, setCollection } from '@/lib/storage';
 import { formatNumber } from '@/lib/format';
-import type { Album, Artist, Track } from '@/types/domain';
+import type { Album, Track } from '@/types/domain';
 
 export default function ArtistProfilePage({ params }: { params: { id: string } }) {
-  const { currentUser, updateCurrentUser } = useAuth();
-  const [artists, setArtists] = useState<Artist[]>(getCollection('artists'));
+  const { currentUser, updateCurrentUser, artists, refreshUsers, isReady } = useAuth();
   const albums = getCollection('albums') as Album[];
   const tracks = getCollection('tracks') as Track[];
   const artist = artists.find((item) => item.id === params.id);
 
+  if (!isReady) return <AppShell><PageHeader title="Loading artist..." /></AppShell>;
   if (!artist) return <AppShell><PageHeader title="Artist not found" /></AppShell>;
   const artistAlbums = albums.filter((album) => album.artistId === artist.id);
   const artistTracks = tracks.filter((track) => track.artistId === artist.id);
@@ -37,12 +36,12 @@ export default function ArtistProfilePage({ params }: { params: { id: string } }
       return { ...item, followers: nextFollowers };
     });
 
-    setArtists(nextArtists);
     setCollection('artists', nextArtists);
     updateCurrentUser({
       followedArtistIds: nextFollowedArtistIds,
       following: Math.max(0, currentUser.following + (followed ? -1 : 1))
     });
+    refreshUsers();
   };
 
   return (

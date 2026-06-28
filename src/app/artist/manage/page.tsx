@@ -144,7 +144,7 @@ export default function ArtistManagePage() {
       }
 
       if (audioFile instanceof File && audioFile.size > 0) {
-        newAudioUrl = URL.createObjectURL(audioFile);
+        newAudioUrl = await fileToBase64(audioFile);
         newDuration = await getAudioDuration(newAudioUrl);
       }
 
@@ -204,10 +204,11 @@ export default function ArtistManagePage() {
         const audio = form.get(`trackAudio-${i}`);
         const cover = form.get(`trackCover-${i}`);
 
-        const trackAudioUrl =
-          audio instanceof File
-            ? URL.createObjectURL(audio)
-            : "";
+        let trackAudioUrl = "";
+
+        if (audio instanceof File) {
+          trackAudioUrl = await fileToBase64(audio);
+        }
 
         const trackDuration =
           trackAudioUrl
@@ -288,7 +289,12 @@ export default function ArtistManagePage() {
     const audioFile = form.get('audio');
     const coverFile = form.get('cover');
 
-    const audioUrl = audioFile instanceof File ? URL.createObjectURL(audioFile) : "";
+    let audioUrl = "";
+
+    if (audioFile instanceof File) {
+      audioUrl = await fileToBase64(audioFile);
+    }
+
     const duration = audioUrl ? await getAudioDuration(audioUrl) : 0;
     const coverUrl = coverFile instanceof File ? await fileToBase64(coverFile) : "";
 

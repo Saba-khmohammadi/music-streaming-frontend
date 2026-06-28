@@ -9,13 +9,12 @@ import { formatDuration } from '@/lib/format';
 import type { Album, Artist } from '@/types/domain';
 import { canSeeAnalytics } from '@/lib/rules';
 
-export default function MiniPlayer() {
+export function MiniPlayer() {
   const { currentUser } = useAuth();
   const { currentTrack, queue, isPlaying, progress, volume, repeatMode, shuffle, togglePlay, next, previous, seek, setVolume, setRepeatMode, toggleShuffle, removeFromQueue } = usePlayer();
   const [showQueue, setShowQueue] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   useEffect(() => {
@@ -228,3 +227,5 @@ export default function MiniPlayer() {
     </>
   );
 }
+
+export default MiniPlayer;

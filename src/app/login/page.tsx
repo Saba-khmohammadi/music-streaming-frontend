@@ -1,14 +1,12 @@
 'use client';
 
 import { FormEvent, Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/context/AuthContext';
 
 function LoginContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/home';
   const { login, registerListener, registerArtist } = useAuth();
   const [tab, setTab] = useState<'login' | 'listener' | 'artist' | 'reset'>('login');
   const [error, setError] = useState('');
@@ -23,7 +21,7 @@ function LoginContent() {
       setError('Invalid email or password. Use the sample accounts in the README.');
       return;
     }
-    router.push(next);
+    router.push('/home');
   };
 
   const handleListener = (event: FormEvent<HTMLFormElement>) => {

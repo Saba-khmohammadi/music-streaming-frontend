@@ -9,7 +9,12 @@ import {
   useState,
   useRef
 } from 'react';
-import { getCollection, readStore, writeStore } from '@/lib/storage';
+import {
+  getCollection,
+  readStore,
+  writeStore,
+  setCollection
+} from '@/lib/storage';
 import type { RepeatMode, Track } from '@/types/domain';
 
 interface PlayerContextValue {
@@ -44,6 +49,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState(0);
   const [repeatMode, setRepeat] = useState<RepeatMode>('off');
   const [shuffle, setShuffle] = useState(false);
+  const [listenerCounted, setListenerCounted] = useState(false);
+  const [streamCounted, setStreamCounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? null;
@@ -93,6 +100,55 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       audioRef.current.play().catch(() => {});
     }
   }, [currentTrack, isPlaying]);
+
+  // Reset counted states when track changes
+  useEffect(() => {
+    setListenerCounted(false);
+    setStreamCounted(false);
+  }, [currentTrackId]);
+
+  // Handle listener and stream counting based on progress
+  useEffect(() => {
+    if (!currentTrack) return;
+
+    // After 1 second - count listener
+    if (!listenerCounted && progress >= 1) {
+      setTracks(prev => {
+        const updated = prev.map((t: Track) =>
+          t.id === currentTrack.id
+            ? {
+                ...t,
+                listeners: (t.listeners || 0) + 1
+              }
+            : t
+        );
+
+        setCollection("tracks", updated);
+        return updated;
+      });
+      
+      setListenerCounted(true);
+    }
+
+    // After 10 seconds - count stream
+    if (!streamCounted && progress >= 10) {
+      setTracks(prev => {
+        const updated = prev.map((t: Track) =>
+          t.id === currentTrack.id
+            ? {
+                ...t,
+                streams: (t.streams || 0) + 1
+              }
+            : t
+        );
+
+        setCollection("tracks", updated);
+        return updated;
+      });
+      
+      setStreamCounted(true);
+    }
+  }, [progress, currentTrack, listenerCounted, streamCounted]);
 
   useEffect(() => {
     writeStore('player', { currentTrackId, queueIds, volume, repeatMode, shuffle });

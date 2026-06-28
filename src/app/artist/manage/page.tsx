@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState, useEffect } from 'react';
 import AppShell from '@/components/AppShell';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
@@ -38,6 +38,27 @@ export default function ArtistManagePage() {
     () => (artist ? tracks.filter((track) => track.artistId === artist.id) : []),
     [artist, tracks]
   );
+  
+  // Listen for tracks-updated event from PlayerContext
+  useEffect(() => {
+    const refreshTracks = () => {
+      const latestTracks = getCollection('tracks');
+      setTracks(latestTracks);
+      const latestAlbums = getCollection('albums');
+      setAlbums(latestAlbums);
+    };
+
+    // Listen for custom event
+    window.addEventListener('tracks-updated', refreshTracks);
+    
+    // Also refresh when page gets focus
+    window.addEventListener('focus', refreshTracks);
+
+    return () => {
+      window.removeEventListener('tracks-updated', refreshTracks);
+      window.removeEventListener('focus', refreshTracks);
+    };
+  }, []);
   
   const addAlbumTrack = () => {
     setAlbumTracks((prev) => [

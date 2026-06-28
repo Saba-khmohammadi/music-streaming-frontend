@@ -1743,6 +1743,9 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   height: 64px;
+  position: relative;
+  z-index: 1000;
+
 }
 
 /* اصلاح آواتار و یوزرپیل */

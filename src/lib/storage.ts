@@ -51,12 +51,29 @@ export function getCollection<K extends keyof AppData>(key: K): AppData[K] {
 
 export function setCollection<K extends keyof AppData>(key: K, value: AppData[K]) {
   writeStore(String(key), value);
+  
+  // Dispatch event to notify all components about storage update
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('storage-update', {
+        detail: {
+          key,
+          value,
+        },
+      })
+    );
+  }
 }
 
 export function resetMockData() {
   if (!canUseStorage()) return;
   Object.keys(seedData).forEach((key) => window.localStorage.removeItem(PREFIX + key));
   window.localStorage.removeItem(PREFIX + 'currentUserId');
+  
+  // Dispatch event for reset
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('storage-update', { detail: { key: 'reset', value: null } }));
+  }
 }
 
 export function getCurrentUserId() {

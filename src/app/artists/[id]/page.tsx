@@ -1,29 +1,45 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import AlbumCard from '@/components/AlbumCard';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import TrackCard from '@/components/TrackCard';
 import { useAuth } from '@/context/AuthContext';
 import { canSeeAnalytics } from '@/lib/rules';
+import { getPublicAlbums, getPublicTracks, syncExpiredEarlyAccess } from '@/lib/earlyAccess';
 import { getCollection, setCollection } from '@/lib/storage';
 import { formatNumber } from '@/lib/format';
 import type { Album, Track } from '@/types/domain';
 
 export default function ArtistProfilePage({ params }: { params: { id: string } }) {
   const { currentUser, updateCurrentUser, artists, refreshUsers, isReady } = useAuth();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    syncExpiredEarlyAccess();
+    const timer = window.setInterval(() => {
+      syncExpiredEarlyAccess();
+      setNow(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   const albums = getCollection('albums') as Album[];
   const tracks = getCollection('tracks') as Track[];
   const artist = artists.find((item) => item.id === params.id);
+  const publicAlbums = getPublicAlbums(albums, now);
+  const publicTracks = getPublicTracks(tracks, albums, now);
 
   if (!isReady) return <AppShell><PageHeader title="Loading artist..." /></AppShell>;
   if (!artist) return <AppShell><PageHeader title="Artist not found" /></AppShell>;
-  const artistAlbums = albums.filter((album) => album.artistId === artist.id);
-  const artistTracks = tracks.filter((track) => track.artistId === artist.id);
+  const artistAlbums = publicAlbums.filter((album) => album.artistId === artist.id);
+  const artistTracks = publicTracks.filter((track) => track.artistId === artist.id);
   const followedArtistIds = currentUser?.followedArtistIds ?? [];
   const followed = followedArtistIds.includes(artist.id);
   const isOwnArtistProfile = currentUser?.artistId === artist.id;
-  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
+  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.role, currentUser.subscription) : false;
 
   const toggleFollow = () => {
     if (!currentUser || isOwnArtistProfile) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { canManageWorks, canSeeAnalytics } from '@/lib/rules';
 import { getCollection, newId, setCollection } from '@/lib/storage';
 import { formatCurrency, formatNumber } from '@/lib/format';
+import { createEarlyAccessMeta, syncExpiredEarlyAccess } from '@/lib/earlyAccess';
 import type { Album, Artist, Track } from '@/types/domain';
 
 export default function ArtistManagePage() {
@@ -18,6 +19,18 @@ export default function ArtistManagePage() {
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const artists = getCollection('artists') as Artist[];
   const [releaseType, setReleaseType] = useState<'single' | 'album'>('single');
+
+  useEffect(() => {
+    const syncReleases = () => {
+      const synced = syncExpiredEarlyAccess();
+      setTracks(synced.tracks);
+      setAlbums(synced.albums);
+    };
+
+    syncReleases();
+    const timer = window.setInterval(syncReleases, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const [albumTracks, setAlbumTracks] = useState([
     {
@@ -88,6 +101,7 @@ export default function ArtistManagePage() {
     const form = new FormData(formElement);
 
     const type = String(form.get('type')) as 'album' | 'single';
+    const earlyAccessMeta = createEarlyAccessMeta();
 
     const fileToBase64 = (file: File): Promise<string> =>
       new Promise((resolve, reject) => {
@@ -217,6 +231,7 @@ export default function ArtistManagePage() {
           audioUrl: trackAudioUrl,
           duration: trackDuration,
           releaseDate: trackReleaseDate,
+          ...earlyAccessMeta,
           listeners: 0,
           streams: 0
         });
@@ -228,6 +243,7 @@ export default function ArtistManagePage() {
         artistId: artist.id,
         coverUrl: albumCoverUrl,
         releaseDate: albumReleaseDate,
+        ...earlyAccessMeta,
         genre: albumGenre,
         type: "album",
         trackIds: createdTracks.map((t) => t.id)
@@ -284,6 +300,7 @@ export default function ArtistManagePage() {
       audioUrl,
       duration,
       releaseDate,
+      ...earlyAccessMeta,
       listeners: 0,
       streams: 0,
       lyrics,

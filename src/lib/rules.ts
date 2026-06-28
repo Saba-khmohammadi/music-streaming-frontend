@@ -59,6 +59,7 @@ const navLabels: Record<UserPreferences['language'], Record<string, string>> = {
   en: {
     '/home': 'Home',
     '/library': 'Albums and Singles',
+    '/early-access': 'Early Access',
     '/playlists': 'Playlists',
     '/notifications': 'Notifications',
     '/support': 'Support Chat',
@@ -70,6 +71,7 @@ const navLabels: Record<UserPreferences['language'], Record<string, string>> = {
   fa: {
     '/home': 'خانه',
     '/library': 'آلبوم‌ها و تک‌آهنگ‌ها',
+    '/early-access': 'دسترسی زودهنگام',
     '/playlists': 'پلی‌لیست‌ها',
     '/notifications': 'اعلان‌ها',
     '/support': 'چت پشتیبانی',
@@ -85,6 +87,7 @@ export const navItemsForRole = (role: UserRole, language: UserPreferences['langu
   const base = [
     { href: '/home', label: label['/home'] },
     { href: '/library', label: label['/library'] },
+    { href: '/early-access', label: label['/early-access'] },
     { href: '/playlists', label: label['/playlists'] },
     { href: '/notifications', label: label['/notifications'] },
     { href: '/profile', label: label['/profile'] },

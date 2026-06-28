@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import PageHeader from '@/components/PageHeader';
 import TrackCard from '@/components/TrackCard';
 import { useAuth } from '@/context/AuthContext';
+import { canUserAccessEarlyRelease, isEarlyAccessActive, syncExpiredEarlyAccess } from '@/lib/earlyAccess';
 import { getCollection } from '@/lib/storage';
 import { formatDate, formatNumber } from '@/lib/format';
 import type { Album, Artist, Track } from '@/types/domain';
@@ -12,6 +14,18 @@ import { canSeeAnalytics } from '@/lib/rules';
 
 export default function AlbumPage({ params }: { params: { id: string } }) {
   const { currentUser } = useAuth();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    syncExpiredEarlyAccess();
+    const timer = window.setInterval(() => {
+      syncExpiredEarlyAccess();
+      setNow(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   const albums = getCollection('albums') as Album[];
   const artists = getCollection('artists') as Artist[];
   const tracks = getCollection('tracks') as Track[];
@@ -24,6 +38,27 @@ export default function AlbumPage({ params }: { params: { id: string } }) {
         <Link className="premium-back-btn" href="/library">
           <i className="fas fa-arrow-left"></i> Back to Library
         </Link>
+      </AppShell>
+    );
+  }
+
+  const isEarly = isEarlyAccessActive(album, now);
+
+  if (isEarly && !canUserAccessEarlyRelease(currentUser)) {
+    return (
+      <AppShell>
+        <PageHeader
+          title="Gold Early Access"
+          description="This release is available only to Gold users during the first two minutes after upload."
+        />
+        <div className="premium-upgrade-card">
+          <div className="upgrade-icon"><i className="fas fa-crown"></i></div>
+          <div className="upgrade-content">
+            <h2>This release is not public yet</h2>
+            <p>It will appear automatically in Albums and Singles after the Early Access window ends.</p>
+          </div>
+          <Link className="premium-btn-upgrade" href="/settings">Upgrade Now</Link>
+        </div>
       </AppShell>
     );
   }
@@ -43,7 +78,7 @@ export default function AlbumPage({ params }: { params: { id: string } }) {
         <div className="premium-album-info">
           <div className="premium-badge-row">
             <span className="premium-type-badge">{album.type === 'album' ? 'Album' : 'Single'}</span>
-            {album.isEarlyAccess && (
+            {isEarly && (
               <span className="premium-early-badge">
                 <i className="fas fa-bolt"></i> Early Access
               </span>

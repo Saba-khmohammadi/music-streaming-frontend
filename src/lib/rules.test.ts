@@ -35,9 +35,10 @@ describe('subscription and access rules', () => {
     expect(canDownloadTrack('gold')).toBe(true);
   });
 
-  it('shows analytics and early access only to gold users', () => {
-    expect(canSeeAnalytics('silver')).toBe(false);
-    expect(canSeeAnalytics('gold')).toBe(true);
+  it('shows analytics to gold users and artists and early access only to gold users', () => {
+    expect(canSeeAnalytics('listener', 'silver')).toBe(false);
+    expect(canSeeAnalytics('listener', 'gold')).toBe(true);
+    expect(canSeeAnalytics('artist', 'base')).toBe(true);
     expect(canAccessEarlyRelease('base')).toBe(false);
     expect(canAccessEarlyRelease('gold')).toBe(true);
   });

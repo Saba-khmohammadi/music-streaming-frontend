@@ -1,12 +1,13 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import AlbumCard from '@/components/AlbumCard';
 import AppShell from '@/components/AppShell';
 import Modal from '@/components/Modal';
 import PageHeader from '@/components/PageHeader';
 import TrackCard from '@/components/TrackCard';
 import { useAuth } from '@/context/AuthContext';
+import { getPublicAlbums, getPublicTracks, syncExpiredEarlyAccess } from '@/lib/earlyAccess';
 import { filterAlbums, filterTracks, sortAlbums, sortTracks, type SortMode } from '@/lib/search';
 import { getCollection, setCollection } from '@/lib/storage';
 import type { Album, Artist, Playlist, Track } from '@/types/domain';
@@ -17,12 +18,33 @@ export default function LibraryPage() {
   const [sort, setSort] = useState<SortMode>('listeners');
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>(getCollection('playlists'));
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    syncExpiredEarlyAccess();
+    const timer = window.setInterval(() => {
+      syncExpiredEarlyAccess();
+      setNow(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   const artists = getCollection('artists') as Artist[];
   const tracks = getCollection('tracks') as Track[];
   const albums = getCollection('albums') as Album[];
 
-  const visibleTracks = useMemo(() => sortTracks(filterTracks(tracks, artists, query), sort), [artists, query, sort, tracks]);
-  const visibleAlbums = useMemo(() => sortAlbums(filterAlbums(albums, artists, query), sort, tracks), [albums, artists, query, sort, tracks]);
+  const publicAlbums = useMemo(() => getPublicAlbums(albums, now), [albums, now]);
+  const publicTracks = useMemo(() => getPublicTracks(tracks, albums, now), [albums, now, tracks]);
+
+  const visibleTracks = useMemo(
+    () => sortTracks(filterTracks(publicTracks, artists, query), sort),
+    [artists, publicTracks, query, sort]
+  );
+  const visibleAlbums = useMemo(
+    () => sortAlbums(filterAlbums(publicAlbums, artists, query), sort, publicTracks),
+    [artists, publicAlbums, publicTracks, query, sort]
+  );
 
   const addToPlaylist = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,7 +65,10 @@ export default function LibraryPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Albums and Singles" description="Search by release title, artist name, or genre; sort by listeners or release date." />
+      <PageHeader
+        title="Albums and Singles"
+        description="Search public releases by title, artist name, or genre. New uploads stay in Early Access for Gold users for the first two minutes."
+      />
       <section className="card form-grid" style={{ marginBottom: 24 }}>
         <div className="form-row"><label className="label">Search</label><input className="input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Track, album, or artist name" /></div>
         <div className="form-row"><label className="label">Sort by</label><select className="select" value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="listeners">Listener count</option><option value="releaseDate">Release date</option></select></div>

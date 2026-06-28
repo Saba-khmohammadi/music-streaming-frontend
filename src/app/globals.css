@@ -36,10 +36,12 @@ img { display: block; max-width: 100%; }
   position: sticky;
   top: 0;
   height: 100vh;
-  padding: 24px 18px;
-  border-right: 1px solid var(--border);
-  background: rgba(10, 10, 18, .74);
+  display: flex;
+  flex-direction: column; 
+  padding: 24px 18px 100px 18px !important; 
+  background: rgba(10, 10, 12, 0.95);
   backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
 .brand-logo { width: 44px; height: 44px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: var(--shadow); font-weight: 900; }
@@ -51,7 +53,12 @@ img { display: block; max-width: 100%; }
   transition: .16s ease; border: 1px solid transparent;
 }
 .nav-link:hover, .nav-link.active { background: rgba(139, 92, 246, .15); color: white; border-color: rgba(139, 92, 246, .35); }
-.sidebar-footer { position: absolute; bottom: 24px; left: 18px; right: 18px; }
+
+.sidebar-footer {
+  margin-top: auto !important; 
+  width: 100%;
+}
+
 .main-area { min-width: 0; }
 .topbar {
   position: sticky; top: 0; z-index: 20;
@@ -733,7 +740,10 @@ html[dir="rtl"] { direction: rtl; }
 html[dir="ltr"] { direction: ltr; }
 html[dir="rtl"] body { font-family: Tahoma, Arial, Helvetica, sans-serif; }
 html[dir="rtl"] th, html[dir="rtl"] td { text-align: right; }
-html[dir="rtl"] .sidebar { border-right: 0; border-left: 1px solid var(--border); }
+html[dir="rtl"] .sidebar {
+  border-right: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
 html[dir="rtl"] .player { direction: ltr; }
 
 .nav-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
@@ -1966,6 +1976,135 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 12px;
+}
+
+/* --- منوی پروفایل کشویی --- */
+.profile-menu-container {
+  position: relative;
+}
+
+/* تبدیل دکمه پروفایل به حالت قابل کلیک */
+.user-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-profile-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-chevron {
+  font-size: 10px;
+  margin-left: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s ease;
+}
+
+/* بدنه منوی دراپ‌داون (Glassmorphism) */
+.profile-dropdown-glass {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 200px;
+  background: rgba(15, 15, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+/* آیتم‌های داخل منو */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item i {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* خط جداکننده */
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+/* استایل مخصوص دکمه خروج */
+.dropdown-item.danger {
+  color: #fca5a5;
+}
+
+.dropdown-item.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* در حالت دسکتاپ منوی همبرگری رو کلاً مخفی کن */
+.mobile-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mobile-toggle-btn:hover {
+  color: #fff;
+}
+
+/* فقط وقتی صفحه کوچیک شد (موبایل) نمایشش بده */
+@media (max-width: 768px) {
+  .mobile-toggle-btn {
+    display: block;
+  }
+  
+  .premium-topbar {
+    justify-content: space-between !important; /* توی موبایل دکمه میره چپ، پروفایل میره راست */
+    padding: 16px 20px;
+  }
+}
+
+/* انیمیشن باز شدن منو */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ریسپانسیو برای موبایل */

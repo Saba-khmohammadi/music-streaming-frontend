@@ -1,14 +1,12 @@
 'use client';
 
 import { FormEvent, Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/context/AuthContext';
 
 function LoginContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/home';
   const { login, registerListener, registerArtist } = useAuth();
   const [tab, setTab] = useState<'login' | 'listener' | 'artist' | 'reset'>('login');
   const [error, setError] = useState('');
@@ -23,7 +21,7 @@ function LoginContent() {
       setError('Invalid email or password. Use the sample accounts in the README.');
       return;
     }
-    router.push(next);
+    router.push('/home');
   };
 
   const handleListener = (event: FormEvent<HTMLFormElement>) => {
@@ -254,26 +252,51 @@ function LoginContent() {
         </div>
       </section>
       {privacyOpen ? (
-        <Modal title="Privacy Policy & Data Security" onClose={() => setPrivacyOpen(false)}>
-          <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
+        <Modal title="Privacy Policy" onClose={() => setPrivacyOpen(false)}>
+          <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '560px' }}>
+            <p className="page-description" style={{ fontSize: '13px', margin: 0 }}>
+              This policy explains how Music Streaming Service handles your account details, listening activity, artist profiles, and app preferences while you use this demo music platform.
+            </p>
+
             <div>
-              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>1. Local Storage Only</h4>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>1. Information we collect</h4>
               <p className="page-description" style={{ fontSize: '13px' }}>
-                Any information, configurations, or simulation accounts you create are stored exclusively in your browser's <strong>LocalStorage</strong>.
+                We may store the details you add to the app, including your name, email address, password, birth date, gender, selected role, followed artists, playlists, library items, notifications, and artist sample file names or links.
               </p>
             </div>
 
             <div>
-              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>2. Zero Server Transmission</h4>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>2. How we use information</h4>
               <p className="page-description" style={{ fontSize: '13px' }}>
-                No data is transmitted, uploaded, or leaked to any external cloud, database, or backend server. The application runs completely isolated on your client side.
+                Your information is used to personalize the app experience, keep you signed in, show your library and following list, display artist followers, manage artist account requests, and make the demo features work correctly.
               </p>
             </div>
 
             <div>
-              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>3. Data Control</h4>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>3. Storage and security</h4>
               <p className="page-description" style={{ fontSize: '13px' }}>
-                Since the data lives entirely in your browser, clearing your browsing data or site cache will permanently reset the application and remove your simulated history.
+                This project stores data in your browser's <strong>LocalStorage</strong>. It does not send your data to an external server, cloud database, analytics provider, or advertising network. Because this is a frontend demo, do not use a real password or sensitive personal information.
+              </p>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>4. Sharing and visibility</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                Profile and artist information may be visible inside the app where the feature requires it, such as artist pages, follower counts, playlists, and dashboard sections. We do not sell, rent, or share your demo data with third parties.
+              </p>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>5. Your choices and control</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                You can update your activity inside the app by following or unfollowing artists and changing your library actions. You can remove all stored demo data at any time by clearing this website's browser storage or site data.
+              </p>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 4px 0', color: 'inherit', fontSize: '15px', fontWeight: 'bold' }}>6. Policy updates</h4>
+              <p className="page-description" style={{ fontSize: '13px' }}>
+                If this project adds real backend services, payments, messaging, analytics, or public uploads in the future, this policy should be updated before those features are used.
               </p>
             </div>
           </div>

@@ -54,6 +54,7 @@ export interface Album {
   coverUrl: string;
   releaseDate: string;
   isEarlyAccess?: boolean;
+  earlyAccessStartedAt?: string;
   genre: string;
   trackIds: string[];
   type: 'album' | 'single';
@@ -67,10 +68,11 @@ export interface Track {
   coverUrl: string;
   duration: number;
   releaseDate: string;
+  isEarlyAccess?: boolean;
+  earlyAccessStartedAt?: string;
   listeners: number;
   streams: number;
   lyrics?: string;
-  isEarlyAccess?: boolean;
   genre: string;
   collaborators?: string[];
   audioUrl?: string;
@@ -98,6 +100,7 @@ export interface AppNotification {
 
 export interface Ticket {
   id: string;
+  userId?: string;
   userName: string;
   subject: string;
   status: TicketStatus;

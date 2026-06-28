@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePlayer } from '@/context/PlayerContext';
-import { formatDuration, formatNumber } from '@/lib/format';
+import { formatNumber } from '@/lib/format';
 import { canSeeAnalytics } from '@/lib/rules';
+import { isEarlyAccessActive } from '@/lib/earlyAccess';
 import { getCollection } from '@/lib/storage';
-import type { Album, Artist, Track } from '@/types/domain';
+import type { Artist, Track } from '@/types/domain';
 
 export default function TrackCard({ track, queueIds, action }: { track: Track; queueIds?: string[]; action?: React.ReactNode }) {
   const { currentUser } = useAuth();
@@ -26,15 +27,14 @@ export default function TrackCard({ track, queueIds, action }: { track: Track; q
   }, []);
 
   const showAnalytics = currentUser ? canSeeAnalytics(currentUser.role, currentUser.subscription) : false;
+  const isEarly = isEarlyAccessActive(track);
 
-  const { artist, album } = useMemo(() => {
+  const { artist } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
-    const albums = getCollection('albums') as Album[];
     return {
-      artist: artists.find((item) => item.id === track.artistId),
-      album: albums.find((item) => item.id === track.albumId)
+      artist: artists.find((item) => item.id === track.artistId)
     };
-  }, [track.albumId, track.artistId]);
+  }, [track.artistId]);
 
   return (
     <div className="premium-track-card" onClick={() => playTrack(track.id, queueIds)}>
@@ -43,6 +43,7 @@ export default function TrackCard({ track, queueIds, action }: { track: Track; q
         <div className="track-cover-wrapper"><img src={track.coverUrl} alt={track.title} className="track-cover" /></div>
         <div className="track-info">
           <strong className="track-title">{track.title}</strong>
+          {isEarly && <span className="premium-card-early-badge"><i className="fas fa-bolt"></i> Early</span>}
           <div className="track-meta" onClick={(e) => e.stopPropagation()}>
              {artist ? <Link href={`/artists/${artist.id}`}>{artist.name}</Link> : 'Unknown'}
           </div>

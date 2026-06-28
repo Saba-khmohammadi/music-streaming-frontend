@@ -59,8 +59,10 @@ const navLabels: Record<UserPreferences['language'], Record<string, string>> = {
   en: {
     '/home': 'Home',
     '/library': 'Albums and Singles',
+    '/early-access': 'Early Access',
     '/playlists': 'Playlists',
     '/notifications': 'Notifications',
+    '/support': 'Support Chat',
     '/profile': 'User Profile',
     '/settings': 'Settings',
     '/artist/manage': 'Work Management',
@@ -69,8 +71,10 @@ const navLabels: Record<UserPreferences['language'], Record<string, string>> = {
   fa: {
     '/home': 'خانه',
     '/library': 'آلبوم‌ها و تک‌آهنگ‌ها',
+    '/early-access': 'دسترسی زودهنگام',
     '/playlists': 'پلی‌لیست‌ها',
     '/notifications': 'اعلان‌ها',
+    '/support': 'چت پشتیبانی',
     '/profile': 'پروفایل کاربر',
     '/settings': 'تنظیمات',
     '/artist/manage': 'مدیریت آثار',
@@ -83,17 +87,20 @@ export const navItemsForRole = (role: UserRole, language: UserPreferences['langu
   const base = [
     { href: '/home', label: label['/home'] },
     { href: '/library', label: label['/library'] },
+    { href: '/early-access', label: label['/early-access'] },
     { href: '/playlists', label: label['/playlists'] },
     { href: '/notifications', label: label['/notifications'] },
     { href: '/profile', label: label['/profile'] },
     { href: '/settings', label: label['/settings'] }
   ];
-  if (role === 'artist') return [...base, { href: '/artist/manage', label: label['/artist/manage'] }];
+  const supportChat = { href: '/support', label: label['/support'] };
+
+  if (role === 'artist') return [...base, supportChat, { href: '/artist/manage', label: label['/artist/manage'] }];
   if (role === 'support' || role === 'admin') {
     const dashboardLabel = role === 'admin' ? 'admin' : 'support';
     return [...base, { href: '/dashboard', label: dashboardLabel }];
   }
-  return base;
+  return [...base, supportChat];
 };
 
 export const displayRoleLabel = (role: UserRole, language: UserPreferences['language']) =>

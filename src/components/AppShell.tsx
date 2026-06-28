@@ -23,6 +23,8 @@ function Shell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
 
   if (!currentUser) return null;
   const notifications = getCollection('notifications') as AppNotification[];
@@ -30,7 +32,9 @@ function Shell({ children }: { children: React.ReactNode }) {
     (item) => !item.isRead && (item.role === currentUser.role || item.role === 'all' || item.userId === currentUser.id)
   );
   const language = currentUser.preferences.language;
-  const navItems = navItemsForRole(currentUser.role, language);
+  const navItems = navItemsForRole(currentUser.role, language).filter(
+    (item) => item.href !== '/profile' && item.href !== '/settings'
+  );
 
   const handleLogout = () => {
     logout();
@@ -57,25 +61,52 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="premium-app-layout">
       <aside className={`sidebar ${open ? 'mobile-show' : ''}`}>
-      <div className="brand-zone">
-        <div className="brand-logo-glow">
-          <i className="fas fa-music"></i>
+        <div className="brand-zone">
+          <div className="brand-logo-glow">
+            <i className="fas fa-music"></i>
+          </div>
+          <span className="brand-text">MusicStream</span>
         </div>
-        <span className="brand-text">MusicStream</span>
-      </div>
         <Nav />
-        <div className="sidebar-footer">
-          <button className="premium-logout-btn" onClick={handleLogout}>{language === 'fa' ? 'خروج' : 'Log out'}</button>
-        </div>
+        {/* 🎉 بلوک sidebar-footer کلاً از اینجا حذف شد! */}
       </aside>
 
       <main className="main-area">
         <header className="premium-topbar">
+          <button className="mobile-toggle-btn" onClick={() => setOpen(!open)}>
+            <i className={`fas ${open ? 'fa-times' : 'fa-bars'}`}></i>
+          </button>
           
-          <Link className="user-profile-pill" href="/profile">
-            <img src={currentUser.avatarUrl} alt="profile" className="avatar-img" />
-            <span className="user-name">{currentUser.displayName}</span>
-          </Link>
+          <div /> {/* این رو برای تنظیم فاصله (Space) نگه دار */}
+
+          {/* 🌟 منوی پروفایل جدید */}
+          <div className="profile-menu-container">
+            <button 
+              className="user-profile-pill" 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+            >
+              <img src={currentUser.avatarUrl} alt="profile" className="avatar-img" />
+              <span className="user-name">{currentUser.displayName}</span>
+              <i className={`fas fa-chevron-${isProfileOpen ? 'up' : 'down'} profile-chevron`}></i>
+            </button>
+
+            {isProfileOpen && (
+              <div className="profile-dropdown-glass" onClick={() => setIsProfileOpen(false)}>
+                <Link href="/profile" className="dropdown-item">
+                  <i className="fas fa-user"></i> {language === 'fa' ? 'پروفایل' : 'Profile'}
+                </Link>
+                <Link href="/settings" className="dropdown-item">
+                  <i className="fas fa-cog"></i> {language === 'fa' ? 'تنظیمات' : 'Settings'}
+                </Link>
+                
+                <div className="dropdown-divider"></div>
+                
+                <button onClick={handleLogout} className="dropdown-item danger">
+                  <i className="fas fa-sign-out-alt"></i> {language === 'fa' ? 'خروج' : 'Log out'}
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         {open && <div className="mobile-nav-backdrop" onClick={() => setOpen(false)} />}

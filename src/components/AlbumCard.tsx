@@ -6,6 +6,7 @@ import { formatDate, formatNumber } from '@/lib/format';
 import { getCollection } from '@/lib/storage';
 import type { Album, Artist, Track } from '@/types/domain';
 import { canSeeAnalytics } from '@/lib/rules';
+import { isEarlyAccessActive } from '@/lib/earlyAccess';
 
 
 export default function AlbumCard({ album, artist }: { album: Album; artist?: Artist }) {
@@ -14,17 +15,18 @@ export default function AlbumCard({ album, artist }: { album: Album; artist?: Ar
   const albumTracks = tracks.filter((track) => album.trackIds.includes(track.id));
   const listeners = albumTracks.reduce((sum, track) => sum + track.listeners, 0);
   const streams = albumTracks.reduce((sum, track) => sum + track.streams, 0);
+  const isEarly = isEarlyAccessActive(album);
 
   return (
     <Link 
-      className={`premium-album-card-item ${album.isEarlyAccess ? 'early-access-highlight' : ''}`} 
+      className={`premium-album-card-item ${isEarly ? 'early-access-highlight' : ''}`} 
       href={`/albums/${album.id}`}
     >
       <div className="card-cover-wrapper">
         <img className="premium-card-cover" src={album.coverUrl} alt={album.title} />
         <div className="card-badge-overlay">
           <span className="premium-card-badge">{album.type === 'album' ? 'Album' : 'Single'}</span>
-          {album.isEarlyAccess && (
+          {isEarly && (
             <span className="premium-card-early-badge">
               <i className="fas fa-bolt"></i> Early
             </span>

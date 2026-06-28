@@ -24,7 +24,12 @@ export default function ArtistProfilePage({ params }: { params: { id: string } }
   const followedArtistIds = currentUser?.followedArtistIds ?? [];
   const followed = followedArtistIds.includes(artist.id);
   const isOwnArtistProfile = currentUser?.artistId === artist.id;
-  const showAnalytics = currentUser ? canSeeAnalytics(currentUser.subscription) : false;
+  const showAnalytics = currentUser
+  ? canSeeAnalytics(
+      currentUser.role,
+      currentUser.subscription
+    )
+  : false;
 
   const toggleFollow = () => {
     if (!currentUser || isOwnArtistProfile) return;

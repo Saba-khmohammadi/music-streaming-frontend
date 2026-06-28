@@ -1764,11 +1764,40 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   object-fit: cover;
 }
 
-/* تنظیم فضای محتوا */
 .content-area {
   padding: 30px;
+  padding-bottom: 120px !important; 
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.track-right-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.download-btn-premium {
+  background: rgba(245, 158, 11, 0.1); /* پس‌زمینه طلایی بسیار ملایم */
+  border: 1px solid rgba(245, 158, 11, 0.3); /* حاشیه طلایی */
+  color: #fbbf24; /* رنگ نمادین گولد */
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 14px;
+}
+
+.download-btn-premium:hover {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fff;
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); /* افکت درخشش طلایی */
+  transform: scale(1.05);
 }
 
 .brand-zone {
@@ -2087,6 +2116,33 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 
 .mobile-toggle-btn:hover {
   color: #fff;
+}
+
+.track-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.meta-link {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.meta-link:hover {
+  color: #fff;
+}
+
+.album-name-link {
+  color: rgba(255, 255, 255, 0.4); /* آلبوم یه ذره کمرنگ‌تر باشه که تفکیک بشه */
+}
+
+.meta-separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
 }
 
 /* فقط وقتی صفحه کوچیک شد (موبایل) نمایشش بده */

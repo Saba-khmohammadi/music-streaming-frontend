@@ -156,7 +156,21 @@ tr:last-child td { border-bottom: 0; }
 .progress-line input { width: 100%; }
 
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-.auth-panel { width: min(100%, 980px); display: grid; grid-template-columns: 1fr 1.2fr; border-radius: 32px; overflow: hidden; border: 1px solid var(--border); background: rgba(255,255,255,.05); box-shadow: var(--shadow); }
+
+.auth-panel {
+  width: min(100%, 980px) !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1.2fr !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  
+  /* اینجا گرادیانتِ نئونی رو می‌ذاریم روی کلِ پنل */
+  background: radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.4), transparent 50%),
+              radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.4), transparent 50%),
+              #050505 !important;
+}
+
 .player-premium-container {
   display: flex !important;
   align-items: center !important;
@@ -719,7 +733,11 @@ tr:last-child td { border-bottom: 0; }
   .player { grid-template-columns: 1fr; gap: 10px; }
   .player-side { justify-content: center; }
   .content { padding: 22px; }
-  .auth-panel { grid-template-columns: 1fr; }
+  .auth-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    background: radial-gradient(circle at top, rgba(124, 58, 237, 0.3), transparent 70%), #050505 !important;
+  }
   .auth-hero { min-height: auto; }
 }
 
@@ -2143,7 +2161,7 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 .album-name-link {
-  color: rgba(255, 255, 255, 0.4); /* آلبوم یه ذره کمرنگ‌تر باشه که تفکیک بشه */
+  color: rgba(255, 255, 255, 0.4); 
 }
 
 .meta-separator {
@@ -2152,9 +2170,144 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 
-/* ========================================= */
-/* 📱 ۱. استایل‌های تمیز لاگین برای موبایل */
-/* ========================================= */
+.premium-gradient-hero {
+  /* تمام استایل‌های گرادیانتِ قبلی از اینجا حذف شد */
+  background: rgba(255, 255, 255, 0.03) !important; 
+  backdrop-filter: blur(10px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  
+  /* حفظِ چیدمان */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 60px !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+.hero-content-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  z-index: 2 !important;
+  position: relative !important;
+}
+
+/* استایل مخصوص لوگو و تایتل روی پس‌زمینه رنگی */
+.hero-logo {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.hero-logo .main-note, .hero-logo .wave-ring {
+  color: #ffffff !important;
+}
+
+.hero-title {
+  font-size: 4rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #fff !important;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2) !important;
+  margin: 0 !important;
+}
+
+/* 👥 باکس شیشه‌ای برای آواتارهای روی هم افتاده */
+.hero-community-box {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  margin-top: 40px !important;
+}
+
+.avatar-pile {
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 10px !important;
+}
+
+.avatar-pile img, .avatar-more {
+  width: 44px !important; /* کمی کوچک‌تر برای هماهنگی بیشتر */
+  height: 44px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(168, 85, 247, 0.5) !important; /* رنگ هماهنگ با تم */
+  object-fit: cover !important;
+  margin-right: -15px !important; /* همپوشانی مناسب */
+  background: #11111a !important;
+}
+
+.avatar-pile img {
+  filter: brightness(0.9); /* کمی عکس‌ها رو تیره کن که یکدست بشن */
+}
+
+/* افکت جذاب وقتی موس میره روی عکس هنرمندها */
+.avatar-pile img:hover {
+  transform: translateY(-8px) scale(1.1) !important;
+  z-index: 10 !important;
+  border-color: #22d3ee !important;
+}
+
+.avatar-more {
+  background: linear-gradient(135deg, #11111a, #1e1e2f) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  z-index: 5 !important;
+  margin-right: 0 !important;
+}
+
+.community-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.community-text strong {
+  color: #ffffff !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.community-text span {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px !important;
+}
+
+/* 📱 تنظیمات رسپانسیو برای موبایل */
+@media (max-width: 1080px) {
+  .premium-gradient-hero {
+    background: transparent !important; /* کلاً پس‌زمینه‌اش رو نامرئی کن */
+    border: none !important;           /* کادرش رو هم غیب کن */
+    backdrop-filter: none !important;  /* افکت شیشه‌ای رو هم بردار که روی گرادیانتِ اصلی اثر نذاره */
+    padding: 40px 20px 20px 20px !important;
+  }
+
+  .hero-community-box {
+    display: none !important;
+  }
+  .hero-title {
+    font-size: 2.2rem !important;
+  }
+  .hero-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+
 @media (max-width: 768px) {
   .auth-hero {
     display: flex !important;
@@ -2203,11 +2356,9 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
-/* ========================================= */
-/* 📱 ۲. نسخه نهایی و یکپارچه داشبورد برای موبایل */
-/* ========================================= */
+
 @media (max-width: 992px) {
-  /* قفل کردن عرض صفحه و جلوگیری از بیرون‌زدگی */
+  
   html, body {
     overflow-x: hidden !important;
     width: 100% !important;
@@ -2227,7 +2378,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     overflow-x: hidden !important;
   }
 
-  /* تنظیمات هدر و دکمه منوی همبرگری */
   .premium-topbar {
     display: flex !important;
     justify-content: space-between !important;
@@ -2250,7 +2400,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     z-index: 1000 !important;
   }
 
-  /* مخفی کردن سایدبار و نمایش به صورت کشویی */
   .sidebar {
     display: none !important;
   }
@@ -2267,7 +2416,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     backdrop-filter: blur(20px) !important;
   }
 
-  /* پرده تاریک برای بستن منو */
   .mobile-nav-backdrop {
     display: block !important;
     position: fixed !important;
@@ -2281,7 +2429,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     cursor: pointer !important;
   }
 
-  /* دو ستونه کردن آلبوم‌ها و پلی‌لیست‌ها */
   .premium-grid-albums, 
   .premium-grid-playlists,
   .premium-playlists-layout,
@@ -2301,7 +2448,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     border-radius: 12px !important;
   }
 
-  /* فشرده‌سازی کارت‌های آهنگ */
   .premium-track-card {
     padding: 10px 8px !important;
     gap: 8px !important;
@@ -2343,7 +2489,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
     gap: 12px !important;
   }
 
-  /* تنظیم سایز فونت‌ها */
   .page-title, .premium-album-title {
     font-size: 20px !important;
     line-height: 1.3 !important;
@@ -2372,6 +2517,11 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
 
 
 @media (max-width: 768px) {
@@ -2553,5 +2703,129 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   padding: 4px 6px !important;
   font-size: 11px !important;
   white-space: nowrap !important;
+}
+
+
+/* ========================================= */
+/* 🎵 نجاتِ صف پخش (Queue) از به‌هم‌ریختگی روی موبایل */
+/* ========================================= */
+@media (max-width: 768px) {
+  /* ۱. لغو گرید ۲ ستونه و اجبار به یک خط افقی (Flex) */
+  .modal .track-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px !important;
+    width: 100% !important;
+  }
+
+  /* ۲. سایز عکس */
+  .modal .track-row img {
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ۳. مهار کردن اسم آهنگ (اضافه کردن سه نقطه) */
+  .modal .track-row > div {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .modal .track-row strong {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* ۴. فشرده و شیک کردن دکمه حذف */
+  .modal .track-row .btn.danger {
+    flex-shrink: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* ========================================= */
+/* 📱 تعمیر ظاهر مودال‌ها (لیریکس و صف) در موبایل */
+/* ========================================= */
+@media (max-width: 768px) {
+  /* ۱. برگرداندن ضربدر به روبروی عنوان (جلوگیری از رفتن به خط بعد) */
+  .modal .page-header {
+    flex-direction: row !important; 
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .modal .page-header h2 {
+    margin: 0 !important;
+    font-size: 22px !important;
+  }
+
+  /* ۲. استایل شیک، خوانا و هنری برای متن آهنگ (Lyrics) */
+  .modal p {
+    font-size: 14px !important;
+    line-height: 2.6 !important; /* فاصله خطوط بیشتر برای خوانایی */
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-align: center !important; /* وسط‌چین کردن متن مثل موزیک‌پلیرها */
+    max-height: 55vh !important; /* محدود کردن ارتفاع برای اسکرول شدن متن‌های طولانی */
+    overflow-y: auto !important; /* فعال کردن اسکرول نرم */
+    margin: 0 !important;
+    padding: 0 10px !important;
+  }
+  
+  /* خوشگل کردن نوار اسکرولِ لیریکس */
+  .modal p::-webkit-scrollbar {
+    width: 4px !important;
+  }
+  .modal p::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 4px !important;
+  }
+}
+
+/* کوچک کردنِ ظریفِ پنلِ لاگین */
+@media (max-width: 768px) {
+  /* کوچک کردن تایتلِ عظیمِ قبلی */
+  .hero-title {
+    font-size: 1.8rem !important; /* از 3.5 به 1.8 رسیدیم */
+    margin-bottom: 20px !important;
+  }
+
+  /* کوچک کردنِ تب‌ها (دکمه‌های لاگین/لیسنر/آرتیست) */
+  .tabs {
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+  
+  .tab {
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* کوچک کردنِ فیلدها و دکمه‌ها */
+  .input {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .btn.primary.block {
+    padding: 10px !important;
+    font-size: 14px !important;
+    height: 40px !important;
+  }
+  
+  /* کم کردنِ فاصله داخلیِ پنل */
+  .auth-body {
+    padding: 20px !important;
+  }
 }
 

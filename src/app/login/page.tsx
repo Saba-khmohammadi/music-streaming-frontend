@@ -1,9 +1,11 @@
 'use client';
 
-import { FormEvent, Suspense, useState } from 'react';
+import { FormEvent, Suspense, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/context/AuthContext';
+import { getCollection } from '@/lib/storage';
+import type { Artist } from '@/types/domain';
 
 function LoginContent() {
   const router = useRouter();
@@ -82,40 +84,75 @@ function LoginContent() {
     setError('Password recovery link is mocked; no email will be sent.');
   };
 
+  const artists = useMemo(() => {
+    return getCollection('artists') as Artist[];
+  }, []);
+
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <aside className="auth-hero">
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
-          width: '100%', 
-          marginBottom: '24px', 
-          padding: '0 8px',
-          gap: '16px' 
-        }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <aside className="auth-hero premium-gradient-hero" style={{ padding: '20px' }}>
+          <div className="hero-content-wrapper">
             
-            <div className="brand-logo-box">
-              <i className="fas fa-music main-note"></i>
-              <i className="fas fa-circle-notch wave-ring"></i>
+            
+            <div className="hero-brand">
+              
+              <h1 className="hero-title">
+                Music<br />Streaming<br />Service
+              </h1>
             </div>
-            
-            <h1 className="page-title" style={{ margin: 0 }}>
-              Music Streaming Service
-            </h1>
-          </div>
 
-        </div>
-          
+            {/* بخش دایره‌های رو هم افتاده (Glassmorphism) */}
+            <div className="hero-community-box" hidden-mobile>
+            <div className="avatar-pile">
+              {artists.slice(0, 4).map((artist) => (
+                <img 
+                  key={artist.id} 
+                  src={artist.avatarUrl || '/default-artist.png'} // اگر آدرس عکس نداشت، یه عکس پیش‌فرض بذار
+                  alt={artist.name} 
+                  title={artist.name}
+                />
+              ))}
+              {artists.length > 4 && (
+                <div className="avatar-more">+{artists.length - 4}K</div>
+              )}
+            </div>
+              <div className="community-text">
+                <strong>Join the movement</strong>
+                <span>Connect with top artists & listeners worldwide.</span>
+              </div>
+            </div>
+
+          </div>
         </aside>
         <div className="auth-body">
-          <div className="tabs">
-            <button className={`tab ${tab === 'login' ? 'active' : ''}`} onClick={() => setTab('login')}>Login</button>
-            <button className={`tab ${tab === 'listener' ? 'active' : ''}`} onClick={() => setTab('listener')}>Listener Signup</button>
-            <button className={`tab ${tab === 'artist' ? 'active' : ''}`} onClick={() => setTab('artist')}>Artist Signup</button>
+        <div className="tabs">
+            <button 
+              className={`tab ${tab === 'login' ? 'active' : ''}`} 
+              onClick={() => setTab('login')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '600' }}
+            >
+              <i className="fas fa-sign-in-alt" style={{ fontSize: '16px' }}></i>
+              
+            </button>
+            
+            <button 
+              className={`tab ${tab === 'listener' ? 'active' : ''}`} 
+              onClick={() => setTab('listener')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '600' }}
+            >
+              <i className="fas fa-headphones" style={{ fontSize: '16px' }}></i>
+              
+            </button>
+            
+            <button 
+              className={`tab ${tab === 'artist' ? 'active' : ''}`} 
+              onClick={() => setTab('artist')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '600' }}
+            >
+              <i className="fas fa-microphone-alt" style={{ fontSize: '16px' }}></i>
+              
+            </button>
           </div>
 
           {error ? <div className="card" style={{ borderColor: 'rgba(245,158,11,.4)', marginBottom: 14 }}>{error}</div> : null}

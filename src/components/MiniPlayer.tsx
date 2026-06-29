@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePlayer } from '@/context/PlayerContext';
 import { getCollection } from '@/lib/storage';
@@ -16,12 +16,15 @@ export function MiniPlayer() {
   const [showLyrics, setShowLyrics] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-
+  const prevTrackId = useRef(currentTrack?.id);
   useEffect(() => {
-    if (currentTrack && window.innerWidth < 768) {
-      setIsExpanded(true);
+    if (prevTrackId.current && currentTrack?.id && prevTrackId.current !== currentTrack.id) {
+      if (window.innerWidth < 768) {
+        setIsExpanded(true);
+      }
     }
-  }, [currentTrack]);
+    prevTrackId.current = currentTrack?.id;
+  }, [currentTrack?.id]);  
 
   const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
@@ -202,13 +205,30 @@ export function MiniPlayer() {
       {showQueue ? (
         <div className="modal-backdrop" onClick={() => setShowQueue(false)}>
           <div className="modal" onClick={(event) => event.stopPropagation()}>
-            <div className="page-header"><h2>Queue</h2><button className="btn ghost" onClick={() => setShowQueue(false)}>Close</button></div>
+          <div className="page-header">
+            <h2>Queue</h2>
+            <button 
+              className="btn ghost" 
+              onClick={() => setShowQueue(false)} 
+              title="Close"
+              style={{ padding: 0, width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <i className="fas fa-times" style={{ fontSize: '18px' }}></i>
+            </button>
+          </div>
             <div className="grid">
               {queue.map((track) => (
                 <div className="track-row" key={track.id}>
                   <img src={track.coverUrl} alt={track.title} />
                   <div><strong>{track.title}</strong><div className="muted">{formatDuration(track.duration)}</div></div>
-                  <button className="btn danger" onClick={() => removeFromQueue(track.id)}>Remove from queue</button>
+                  <button 
+                    className="btn danger" 
+                    onClick={() => removeFromQueue(track.id)} 
+                    title="Remove from queue"
+                    style={{ padding: '8px 12px', minHeight: 'auto' }}
+                  >
+                    <i className="fas fa-trash"></i>
+                  </button>
                 </div>
               ))}
             </div>
@@ -219,7 +239,17 @@ export function MiniPlayer() {
       {showLyrics ? (
         <div className="modal-backdrop" onClick={() => setShowLyrics(false)}>
           <div className="modal" onClick={(event) => event.stopPropagation()}>
-            <div className="page-header"><h2>Lyrics</h2><button className="btn ghost" onClick={() => setShowLyrics(false)}>Close</button></div>
+          <div className="page-header">
+            <h2>Lyrics</h2>
+            <button 
+              className="btn ghost" 
+              onClick={() => setShowLyrics(false)} 
+              title="Close"
+              style={{ padding: 0, width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <i className="fas fa-times" style={{ fontSize: '18px' }}></i>
+            </button>
+          </div>
             <p style={{ whiteSpace: 'pre-line', lineHeight: 2 }}>{currentTrack.lyrics || 'No lyrics have been added for this track.'}</p>
           </div>
         </div>

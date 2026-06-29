@@ -68,7 +68,6 @@ function Shell({ children }: { children: React.ReactNode }) {
           <span className="brand-text">MusicStream</span>
         </div>
         <Nav />
-        {/* 🎉 بلوک sidebar-footer کلاً از اینجا حذف شد! */}
       </aside>
 
       <main className="main-area">
@@ -76,10 +75,27 @@ function Shell({ children }: { children: React.ReactNode }) {
           <button className="mobile-toggle-btn" onClick={() => setOpen(!open)}>
             <i className={`fas ${open ? 'fa-times' : 'fa-bars'}`}></i>
           </button>
+          <div style={{ flexGrow: 1 }} />
+          <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '40px' }}></div>
           
-          <div /> {/* این رو برای تنظیم فاصله (Space) نگه دار */}
-
-          {/* 🌟 منوی پروفایل جدید */}
+          <button 
+            className="btn ghost" 
+            onClick={() => router.push('/support')} // یا هر مسیری که چت پشتیبانی داره
+            title="Support"
+            style={{ 
+              padding: '0', 
+              borderRadius: '50%', 
+              width: '42px', 
+              height: '42px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
+          >
+            <i className="fas fa-headset"></i> {/* آیکون ساپورت */}
+          </button>
           <div className="profile-menu-container">
             <button 
               className="user-profile-pill" 

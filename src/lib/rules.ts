@@ -95,12 +95,12 @@ export const navItemsForRole = (role: UserRole, language: UserPreferences['langu
   ];
   const supportChat = { href: '/support', label: label['/support'] };
 
-  if (role === 'artist') return [...base, supportChat, { href: '/artist/manage', label: label['/artist/manage'] }];
+  if (role === 'artist') return [...base, { href: '/artist/manage', label: label['/artist/manage'] }];
   if (role === 'support' || role === 'admin') {
     const dashboardLabel = role === 'admin' ? 'admin' : 'support';
     return [...base, { href: '/dashboard', label: dashboardLabel }];
   }
-  return [...base, supportChat];
+  return [...base];
 };
 
 export const displayRoleLabel = (role: UserRole, language: UserPreferences['language']) =>

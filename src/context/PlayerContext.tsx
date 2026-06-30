@@ -49,9 +49,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState(0);
   const [repeatMode, setRepeat] = useState<RepeatMode>('off');
   const [shuffle, setShuffle] = useState(false);
-  const [listenerCounted, setListenerCounted] = useState(false);
-  const [streamCounted, setStreamCounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const countedTrackRef = useRef<string | null>(null);
 
   const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? null;
   const queue = queueIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) as Track[];
@@ -101,77 +100,49 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentTrack, isPlaying]);
 
-  // Reset counted states when track changes
+  // FIX: Listen to audio timeupdate event for accurate progress
   useEffect(() => {
-    setListenerCounted(false);
-    setStreamCounted(false);
-  }, [currentTrackId]);
+    if (!audioRef.current) return;
 
-  // Handle listener and stream counting based on progress
-  useEffect(() => {
-    if (!currentTrack) return;
+    const audio = audioRef.current;
 
-    // After 1 second - count listener
-    if (!listenerCounted && progress >= 1) {
-      setTracks(prev => {
-        const updated = prev.map((t: Track) =>
-          t.id === currentTrack.id
-            ? {
-                ...t,
-                listeners: (t.listeners || 0) + 1
-              }
-            : t
-        );
+    const updateProgress = () => {
+      setProgress(audio.currentTime);
+    };
 
-        setCollection("tracks", updated);
-        return updated;
-      });
-      
-      setListenerCounted(true);
-    }
+    audio.addEventListener("timeupdate", updateProgress);
 
-    // After 10 seconds - count stream
-    if (!streamCounted && progress >= 10) {
-      setTracks(prev => {
-        const updated = prev.map((t: Track) =>
-          t.id === currentTrack.id
-            ? {
-                ...t,
-                streams: (t.streams || 0) + 1
-              }
-            : t
-        );
-
-        setCollection("tracks", updated);
-        return updated;
-      });
-      
-      setStreamCounted(true);
-    }
-  }, [progress, currentTrack, listenerCounted, streamCounted]);
+    return () => {
+      audio.removeEventListener("timeupdate", updateProgress);
+    };
+  }, []);
 
   useEffect(() => {
     writeStore('player', { currentTrackId, queueIds, volume, repeatMode, shuffle });
   }, [currentTrackId, queueIds, repeatMode, shuffle, volume]);
 
-  useEffect(() => {
-    if (!isPlaying) return;
-    const timer = window.setInterval(() => {
-      setProgress((value) => {
-        const nextValue = value + 1;
-        const current = tracks.find((track) => track.id === currentTrackId);
-        if (current && nextValue >= current.duration) {
-          return 0;
-        }
-        return nextValue;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [currentTrackId, isPlaying, tracks]);
-
   const playTrack = useCallback((trackId: string, nextQueueIds?: string[]) => {
     const latestTracks = getCollection('tracks');
-    setTracks(latestTracks);
+
+    let updatedTracks = latestTracks;
+
+    if (countedTrackRef.current !== trackId) {
+      updatedTracks = latestTracks.map(track =>
+        track.id === trackId
+          ? {
+              ...track,
+              listeners: (track.listeners ?? 0) + 1,
+              streams: (track.streams ?? 0) + 1,
+            }
+          : track
+      );
+
+      countedTrackRef.current = trackId;
+
+      setCollection("tracks", updatedTracks);
+    }
+
+    setTracks(updatedTracks);
 
     setCurrentTrackId(trackId);
 
@@ -223,7 +194,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const seek = useCallback((value: number) => setProgress(Math.max(0, value)), []);
+  // FIX: Seek now actually moves the audio to the correct position
+  const seek = useCallback((value: number) => {
+    const newTime = Math.max(0, value);
+
+    setProgress(newTime);
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  }, []);
+  
   const setRepeatMode = useCallback((mode: RepeatMode) => setRepeat(mode), []);
   const toggleShuffle = useCallback(() => setShuffle((value) => !value), []);
   const addToQueue = useCallback((trackId: string) => setQueueIds((prev) => (prev.includes(trackId) ? prev : [...prev, trackId])), []);

@@ -16,7 +16,6 @@ export default function TrackCard({ track, queueIds = [], action }: { track: Tra
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // تابع دانلود مخصوص کاربران گولد
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation(); 
     if (track.audioUrl) {
@@ -29,7 +28,6 @@ export default function TrackCard({ track, queueIds = [], action }: { track: Tra
     }
   };
 
-  // بستن منو با کلیک خارج از آن
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false);
@@ -41,7 +39,6 @@ export default function TrackCard({ track, queueIds = [], action }: { track: Tra
   const showAnalytics = currentUser ? canSeeAnalytics(currentUser.role, currentUser.subscription) : false;
   const isEarly = isEarlyAccessActive(track);
 
-  // 🌟 گرفتن همزمان اطلاعات خواننده و آلبوم به صورت بهینه
   const { artist, album } = useMemo(() => {
     const artists = getCollection('artists') as Artist[];
     const albums = getCollection('albums') as Album[];

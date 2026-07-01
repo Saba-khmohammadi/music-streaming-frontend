@@ -163,67 +163,7 @@ function LoginContent() {
               <div className="form-row"><label className="label">Password</label><input className="input" name="password" type="password" defaultValue="gold123" required /></div>
               <button className="btn primary block">Enter the app</button>
               <button type="button" className="btn ghost block" onClick={() => setTab('reset')}>Forgot password</button>
-              <div className="card" style={{ marginTop: 14 }}>
-                <strong style={{ display: 'block', marginBottom: 12, fontSize: '13px', color: 'var(--muted)' }}>
-                  <i className="fas fa-magic" style={{ marginRight: '6px', color: '#6366f1' }}></i> 
-                  Quick Auto-Fill Login
-                </strong>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                  
-                  <button 
-                    type="button"
-                    className="btn ghost" 
-                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
-                    onClick={() => {
-                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
-                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
-                      if (emailInput && passwordInput) {
-                        emailInput.value = 'admin@example.com';
-                        passwordInput.value = 'admin123';
-                      }
-                    }}
-                  >
-                    <i className="fas fa-user-shield" style={{ fontSize: '16px', color: '#f43f5e' }}></i>
-                    <strong>Admin</strong>
-                  </button>
-
-                  <button 
-                    type="button"
-                    className="btn ghost" 
-                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
-                    onClick={() => {
-                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
-                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
-                      if (emailInput && passwordInput) {
-                        emailInput.value = 'support@example.com';
-                        passwordInput.value = 'support123';
-                      }
-                    }}
-                  >
-                    <i className="fas fa-headset" style={{ fontSize: '16px', color: '#3b82f6' }}></i>
-                    <strong>Support</strong>
-                  </button>
-
-                  <button 
-                    type="button"
-                    className="btn ghost" 
-                    style={{ fontSize: '12px', padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', cursor: 'pointer' }}
-                    onClick={() => {
-                      const emailInput = document.getElementsByName('email')[0] as HTMLInputElement;
-                      const passwordInput = document.getElementsByName('password')[0] as HTMLInputElement;
-                      if (emailInput && passwordInput) {
-                        emailInput.value = 'artist@example.com';
-                        passwordInput.value = 'artist123';
-                      }
-                    }}
-                  >
-                    <i className="fas fa-music" style={{ fontSize: '16px', color: '#10b981' }}></i>
-                    <strong>Artist</strong>
-                  </button>
-
-                </div>
-              </div>
+              
             </form>
           ) : null}
 

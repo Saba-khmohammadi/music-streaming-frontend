@@ -588,13 +588,14 @@ export default function DashboardPage() {
           {safeSection === 'tickets' ? (
             <div className="grid cols-2">
               <section className="card">
-                <div className="section-title" style={{ marginTop: 0 }}>
-                  <div>
-                    <h2>{t.sections.tickets.title}</h2>
-                  </div>
-                  <span className="badge">{formatNumber(tickets.length)} {t.tickets.count}</span>
+                {/* 🌟 ۱. حذف بجِ تعداد تیکت‌ها و شیک کردن هدر جدول */}
+                <div className="verification-header-zone" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700 }}>{t.sections.tickets.title}</h2>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                    {language === 'fa' ? `تیکت‌های دریافتی پشتیبانی: ${tickets.length}` : `Received support tickets: ${tickets.length}`}
+                  </p>
                 </div>
-  
+
                 <div className="table-wrap">
                   <table>
                     <thead>
@@ -603,17 +604,23 @@ export default function DashboardPage() {
                         <th>{t.tickets.userName}</th>
                         <th>{t.tickets.subject}</th>
                         <th>{t.tickets.sentDate}</th>
-                        <th>{t.tickets.status}</th>
+                        {/* 🌟 راست‌چین کردن هدر وضعیت برای تعادل بصری */}
+                        <th style={{ textAlign: 'right', paddingRight: '24px' }}>{t.tickets.status}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {tickets.map((ticket) => (
                         <tr className="clickable-row" key={ticket.id} onClick={() => setSelectedTicketId(ticket.id)}>
-                          <td>{ticket.id}</td>
+                          <td style={{ fontWeight: 600, color: '#a855f7' }}>{ticket.id}</td>
                           <td>{ticket.userName}</td>
-                          <td>{ticket.subject}</td>
-                          <td>{formatDate(ticket.createdAt)}</td>
-                          <td><span className={`badge ${ticket.status === 'closed' ? 'success' : ticket.status === 'open' ? 'warning' : ''}`}>{ticketStatusLabel[ticket.status]}</span></td>
+                          <td style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.subject}</td>
+                          <td style={{ fontSize: '13px', color: 'var(--muted)' }}>{formatDate(ticket.createdAt)}</td>
+                          {/* 🌟 ۲. استفاده از سیستم بج مدرن و مینی برای وضعیت‌ها */}
+                          <td style={{ textAlign: 'right', paddingRight: '24px' }}>
+                            <span className={`ticket-status-dot ${ticket.status}`}>
+                              {ticketStatusLabel[ticket.status]}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -622,25 +629,42 @@ export default function DashboardPage() {
               </section>
   
               <section className="card highlight">
-                <h2>{t.tickets.chatTitle}</h2>
                 {selectedTicket ? (
                   <div className="chatbox">
-                    <div>
-                      <span className="badge">{selectedTicket.id}</span>
-                      <h3>{selectedTicket.subject}</h3>
-                      <p className="muted">{t.tickets.userPrefix}: {selectedTicket.userName} · {t.tickets.status}: {ticketStatusLabel[selectedTicket.status]}</p>
+                    {/* 🌟 ۱. هدرِ جدیدِ چت‌باکس: خلوت، باکلاس و بدون متونِ تکراری مزاحم */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '16px' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{selectedTicket.subject}</h3>
+                        <p className="muted" style={{ margin: '4px 0 0 0', fontSize: '12px' }}>
+                          {t.tickets.userPrefix}: {selectedTicket.userName}
+                        </p>
+                      </div>
+                      <span className="badge" style={{ background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#c084fc', fontVariantNumeric: 'tabular-nums' }}>
+                        {selectedTicket.id}
+                      </span>
                     </div>
+
+                    {/* 🌟 ۲. بخش پیام‌ها با ساختار جدید حبابی (Bubble style) */}
                     <div className="chat-messages">
-                      {selectedTicket.messages.map((message, index) => (
-                        <div className={`chat-message ${message.from === 'support' ? 'support' : 'user'}`} key={`${message.createdAt}-${index}`}>
-                          <strong>{message.from === 'support' ? t.tickets.support : selectedTicket.userName}</strong>
-                          <p>{message.body}</p>
-                          <small>{formatDate(message.createdAt)}</small>
-                        </div>
-                      ))}
+                      {selectedTicket.messages.map((message, index) => {
+                        const isSupport = message.from === 'support';
+                        return (
+                          <div className={`chat-message-bubble ${isSupport ? 'support' : 'user'}`} key={`${message.createdAt}-${index}`}>
+                            <div className="bubble-meta">
+                              <strong>{isSupport ? t.tickets.support : selectedTicket.userName}</strong>
+                              <small>{formatDate(message.createdAt)}</small>
+                            </div>
+                            <p>{message.body}</p>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="form-row">
-                      <label className="label">{t.tickets.replyLabel}</label>
+
+                    {/* 🌟 ۳. فرم ارسال پاسخ ادمین */}
+                    <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                      <label className="label" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.4 }}>
+                        {t.tickets.replyLabel}
+                      </label>
                       <textarea
                         className="textarea"
                         value={ticketReplies[selectedTicket.id] ?? ''}
@@ -649,9 +673,24 @@ export default function DashboardPage() {
                         disabled={selectedTicket.status === 'closed'}
                       />
                     </div>
-                    <div className="notification-actions">
-                      <button className="btn primary" type="button" disabled={selectedTicket.status === 'closed' || !(ticketReplies[selectedTicket.id] ?? '').trim()} onClick={() => answerTicket(selectedTicket.id)}>{t.tickets.sendReply}</button>
-                      <button className="btn danger" type="button" disabled={selectedTicket.status === 'closed'} onClick={() => closeTicket(selectedTicket.id)}>{t.tickets.closeTicket}</button>
+
+                    <div className="notification-actions" style={{ display: 'flex', gap: '12px' }}>
+                      <button 
+                        className="btn-interactive approve" 
+                        type="button" 
+                        disabled={selectedTicket.status === 'closed' || !(ticketReplies[selectedTicket.id] ?? '').trim()} 
+                        onClick={() => answerTicket(selectedTicket.id)}
+                      >
+                        <i className="fas fa-paper-plane"></i> {t.tickets.sendReply}
+                      </button>
+                      <button 
+                        className="btn-interactive reject" 
+                        type="button" 
+                        disabled={selectedTicket.status === 'closed'} 
+                        onClick={() => closeTicket(selectedTicket.id)}
+                      >
+                        <i className="fas fa-lock"></i> {t.tickets.closeTicket}
+                      </button>
                     </div>
                   </div>
                 ) : <EmptyState title={t.tickets.emptyTitle} />}
@@ -661,11 +700,13 @@ export default function DashboardPage() {
   
           {safeSection === 'audit' ? (
             <section className="card">
-              <div className="section-title" style={{ marginTop: 0 }}>
-                <div>
-                  <h2>{t.audit.title}</h2>
-                </div>
+              <div className="verification-header-zone" style={{ marginBottom: '24px' }}>
+                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700 }}>{t.audit.title}</h2>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--muted)' }}>
+                  {language === 'fa' ? 'لیست تراکنش‌ها و تسویه حساب هنرمندان' : 'Artists transactions and settlements audit log'}
+                </p>
               </div>
+
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -676,32 +717,53 @@ export default function DashboardPage() {
                       <th>{t.audit.reward}</th>
                       <th>{t.audit.rewardFormula}</th>
                       <th>{t.audit.paymentStatus}</th>
-                      {isAdmin ? <th>{t.audit.paymentAction}</th> : null}
+                      {isAdmin ? <th style={{ textAlign: 'right', paddingRight: '20px' }}>{t.audit.paymentAction}</th> : null}
                     </tr>
                   </thead>
                   <tbody>
                     {auditRows.map((row) => {
                       const artist = artists.find((item) => item.id === row.artistId);
+                      const isPaid = row.status === 'paid';
+
                       return (
                         <tr key={row.id}>
-                          <td><strong>{artist?.name ?? t.audit.unknownArtist}</strong><br /><small className="muted">{row.artistId}</small></td>
-                          <td>{formatNumber(row.uniqueListeners)}</td>
-                          <td>{formatNumber(row.streams)}</td>
-                          <td>{formatCurrency(row.reward)}</td>
                           <td>
-                            <code>{`(${formatNumber(row.uniqueListeners)} × 30) + (${formatNumber(row.streams)} × 10)`}</code>
+                            <strong style={{ display: 'block', color: '#fff' }}>{artist?.name ?? t.audit.unknownArtist}</strong>
+                            <small className="muted">{row.artistId}</small>
                           </td>
-                          <td><span className={`badge ${row.status === 'paid' ? 'success' : 'warning'}`}>{paymentStatusLabel[row.status]}</span></td>
+                          <td className="tabular-nums">{formatNumber(row.uniqueListeners)}</td>
+                          <td className="tabular-nums">{formatNumber(row.streams)}</td>
+                          <td style={{ color: '#22c55e', fontWeight: 600 }} className="tabular-nums">
+                            {formatCurrency(row.reward)}
+                          </td>
+                          <td>
+                            <code style={{ background: 'rgba(255,255,255,0.03)', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>
+                              {`(${formatNumber(row.uniqueListeners)} × 30) + (${formatNumber(row.streams)} × 10)`}
+                            </code>
+                          </td>
+                          {/* 🌟 بج وضعیت پرداخت به نقطه‌های نئونی تبدیل شد */}
+                          <td>
+                            <span className={`financial-status-dot ${row.status}`}>
+                              {paymentStatusLabel[row.status]}
+                            </span>
+                          </td>
+                          {/* 🌟 دکمه عملیات تسویه تعاملی و جمع‌وجور شد */}
                           {isAdmin ? (
-                            <td>
-                              <button
-                                className={`btn ${row.status === 'paid' ? 'secondary' : 'primary'}`}
-                                type="button"
-                                disabled={row.status === 'paid'}
-                                onClick={() => markAuditRowPaid(row)}
-                              >
-                                {row.status === 'paid' ? paymentStatusLabel.paid : t.audit.markPaid}
-                              </button>
+                            <td style={{ textAlign: 'right', paddingRight: '20px' }}>
+                              {isPaid ? (
+                                <span style={{ color: '#34d399', fontSize: '13px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <i className="fas fa-check-circle"></i> {paymentStatusLabel.paid}
+                                </span>
+                              ) : (
+                                <button
+                                  className="btn-interactive approve"
+                                  type="button"
+                                  style={{ height: '34px', fontSize: '12px', padding: '0 14px', width: 'auto', minHeight: 'auto', borderRadius: '8px' }}
+                                  onClick={() => markAuditRowPaid(row)}
+                                >
+                                  <i className="fas fa-wallet"></i> {t.audit.markPaid}
+                                </button>
+                              )}
                             </td>
                           ) : null}
                         </tr>
@@ -712,47 +774,74 @@ export default function DashboardPage() {
               </div>
             </section>
           ) : null}
-  
+
           {safeSection === 'pricing' && isAdmin ? (
             <div className="grid cols-2">
+              {/* کارت مدیریت قیمت‌ها */}
               <section className="card">
-                <h2>{t.pricing.controlTitle}</h2>
+                <div className="verification-header-zone" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{t.pricing.controlTitle}</h2>
+                </div>
                 <form className="form" onSubmit={savePricing}>
-                  <div className="form-row">
-                    <label className="label">{t.pricing.silverPrice}</label>
-                    <input className="input" name="silver" type="number" min="0" defaultValue={pricing.silver} />
+                  <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label className="label" style={{ fontSize: '12px', opacity: 0.6 }}>{t.pricing.silverPrice}</label>
+                    <input className="input premium-glass-input" name="silver" type="number" min="0" defaultValue={pricing.silver} />
                   </div>
-                  <div className="form-row">
-                    <label className="label">{t.pricing.goldPrice}</label>
-                    <input className="input" name="gold" type="number" min="0" defaultValue={pricing.gold} />
+                  <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label className="label" style={{ fontSize: '12px', opacity: 0.6 }}>{t.pricing.goldPrice}</label>
+                    <input className="input premium-glass-input" name="gold" type="number" min="0" defaultValue={pricing.gold} />
                   </div>
-                  <button className="btn primary" type="submit">{t.pricing.updatePrices}</button>
-                  {pricingSaved ? <span className="badge success">{t.pricing.saved}</span> : null}
+                  <button className="btn-interactive approve" type="submit" style={{ marginTop: '8px', height: '42px' }}>
+                    <i className="fas fa-sync-alt"></i> {t.pricing.updatePrices}
+                  </button>
+                  {pricingSaved ? (
+                    <div style={{ marginTop: '8px' }} className="badge success">{t.pricing.saved}</div>
+                  ) : null}
                 </form>
               </section>
-  
+
+              {/* کارت نمودار و آمارهای کلان سایت */}
               <section className="card highlight">
-                <h2>{t.pricing.reportsTitle}</h2>
-                <div className="subscription-chart-wrap">
+                <div className="verification-header-zone" style={{ marginBottom: '24px' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{t.pricing.reportsTitle}</h2>
+                </div>
+                <div className="subscription-chart-wrap" style={{ gap: '24px' }}>
                   <div
                     className="subscription-pie"
                     aria-label={t.pricing.chartLabel}
-                    style={{ background: `conic-gradient(var(--primary-2) 0deg ${baseDeg}deg, var(--subtle) ${baseDeg}deg ${silverDeg}deg, var(--warning) ${silverDeg}deg 360deg)` }}
+                    style={{ 
+                      background: `conic-gradient(#06b6d4 0deg ${baseDeg}deg, #cbd5e1 ${baseDeg}deg ${silverDeg}deg, #f59e0b ${silverDeg}deg 360deg)`,
+                      border: 'none',
+                      boxShadow: '0 0 20px rgba(0,0,0,0.3)'
+                    }}
                   />
-                  <div className="chart-legend">
-                    <span><i className="legend-dot base" /> {t.pricing.base}: {formatNumber(baseCount)}</span>
-                    <span><i className="legend-dot silver" /> {t.pricing.silver}: {formatNumber(silverCount)}</span>
-                    <span><i className="legend-dot gold" /> {t.pricing.gold}: {formatNumber(goldCount)}</span>
+                  <div className="chart-legend" style={{ gap: '12px' }}>
+                    <span style={{ fontSize: '14px' }}><i className="legend-dot base" style={{ boxShadow: '0 0 8px #06b6d4' }} /> {t.pricing.base}: <strong className="tabular-nums" style={{ color: '#fff' }}>{formatNumber(baseCount)}</strong></span>
+                    <span style={{ fontSize: '14px' }}><i className="legend-dot silver" style={{ boxShadow: '0 0 8px #cbd5e1' }} /> {t.pricing.silver}: <strong className="tabular-nums" style={{ color: '#fff' }}>{formatNumber(silverCount)}</strong></span>
+                    <span style={{ fontSize: '14px' }}><i className="legend-dot gold" style={{ boxShadow: '0 0 8px #f59e0b' }} /> {t.pricing.gold}: <strong className="tabular-nums" style={{ color: '#fff' }}>{formatNumber(goldCount)}</strong></span>
                   </div>
                 </div>
-                <div className="stats dashboard-stats">
-                  <div className="stat"><strong>{formatCurrency(subscriptionRevenue)}</strong><span className="muted">{t.pricing.subscriptionRevenue}</span></div>
-                  <div className="stat"><strong>{formatCurrency(paidRewards)}</strong><span className="muted">{t.pricing.paidRewards}</span></div>
-                  <div className="stat"><strong>{formatCurrency(pendingRewards)}</strong><span className="muted">{t.pricing.pendingRewards}</span></div>
+                
+                {/* باکس سه تایی آمارهای مالی انتهای صفحه */}
+                <div className="stats dashboard-stats" style={{ marginTop: '24px', gap: '12px' }}>
+                  <div className="stat" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                    <strong className="tabular-nums" style={{ color: '#fff' }}>{formatCurrency(subscriptionRevenue)}</strong>
+                    <span className="muted" style={{ fontSize: '12px' }}>{t.pricing.subscriptionRevenue}</span>
+                  </div>
+                  <div className="stat" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                    <strong className="tabular-nums" style={{ color: '#22c55e' }}>{formatCurrency(paidRewards)}</strong>
+                    <span className="muted" style={{ fontSize: '12px' }}>{t.pricing.paidRewards}</span>
+                  </div>
+                  <div className="stat" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                    <strong className="tabular-nums" style={{ color: '#fbbf24' }}>{formatCurrency(pendingRewards)}</strong>
+                    <span className="muted" style={{ fontSize: '12px' }}>{t.pricing.pendingRewards}</span>
+                  </div>
                 </div>
               </section>
             </div>
           ) : null}
+  
+          
         </main>
       </div>
     </AppShell>

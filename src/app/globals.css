@@ -2673,6 +2673,163 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
+/* ==========================================================================
+   🎫 استایل پرمیوم و مینی برای وضعیت تیکت‌ها (بدون کادرهای روی مخ)
+   ========================================================================== */
+
+   .ticket-status-dot {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+    background: transparent !important; /* کلاً پس‌زمینه کدر قدیمی حذف */
+  }
+  
+  /* وضعیت باز (Open) - متن نارنجی به همراه یک نقطه درخشان */
+  .ticket-status-dot.open {
+    color: #fbbf24 !important;
+  }
+  .ticket-status-dot.open::before {
+    content: "" !important;
+    width: 6px !important;
+    height: 6px !important;
+    background-color: #fbbf24 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 8px #fbbf24 !important;
+  }
+  
+  /* وضعیت پاسخ داده شده (Answered / Closed) - متن سبز با نقطه درخشان */
+  .ticket-status-dot.closed,
+  .ticket-status-dot.answered {
+    color: #34d399 !important;
+  }
+  .ticket-status-dot.closed::before,
+  .ticket-status-dot.answered::before {
+    content: "" !important;
+    width: 6px !important;
+    height: 6px !important;
+    background-color: #34d399 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 8px #34d399 !important;
+  }
+
+/* ==========================================================================
+   💬 بازسازی کامل ساختار پیام‌ها در چت‌باکس (Premium Chat Bubbles)
+   ========================================================================== */
+
+   .chat-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    max-height: 380px !important;
+    overflow-y: auto !important;
+    padding-right: 4px !important;
+    margin: 16px 0 !important;
+  }
+  
+  /* ساختار کلی حباب چت */
+  .chat-message-bubble {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 14px 16px !important;
+    border-radius: 16px !important;
+    max-width: 80% !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    border: 1px solid transparent !important;
+  }
+  
+  .chat-message-bubble p {
+    margin: 0 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  /* هدر حباب (نام و تاریخ) */
+  .bubble-meta {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    font-size: 12px !important;
+  }
+  
+  .bubble-meta strong {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+  }
+  
+  .bubble-meta small {
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* 👤 پیام‌های کاربر (سمت چپ - بنفش شیشه‌ای فوق‌العاده محو) */
+  .chat-message-bubble.user {
+    align-self: flex-start !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
+    border-bottom-left-radius: 4px !important;
+  }
+  
+  /* 🛠️ پیام‌های پشتیبان/ادمین (سمت راست - بنفش نئونی باکلاس) */
+  .chat-message-bubble.support {
+    align-self: flex-end !important;
+    background: rgba(139, 92, 246, 0.08) !important;
+    border-color: rgba(139, 92, 246, 0.15) !important;
+    border-bottom-right-radius: 4px !important;
+  }
+  
+  /* نوار اسکرولِ چت‌باکس */
+  .chat-messages::-webkit-scrollbar {
+    width: 4px !important;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
+  }
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums !important;
+}
+
+.financial-status-dot {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 4px 8px !important;
+}
+
+.financial-status-dot.paid {
+  color: #34d399 !important;
+}
+.financial-status-dot.paid::before {
+  content: "" !important;
+  width: 6px !important;
+  height: 6px !important;
+  background-color: #34d399 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 8px #34d399 !important;
+}
+
+.financial-status-dot.pending,
+.financial-status-dot.pending_payment {
+  color: #fbbf24 !important;
+}
+.financial-status-dot.pending::before,
+.financial-status-dot.pending_payment::before {
+  content: "" !important;
+  width: 6px !important;
+  height: 6px !important;
+  background-color: #fbbf24 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 8px #fbbf24 !important;
+}
+
 /* 📱 تنظیمات رسپانسیو برای موبایل */
 @media (max-width: 1080px) {
   .premium-gradient-hero {

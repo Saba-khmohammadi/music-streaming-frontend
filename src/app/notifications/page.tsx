@@ -23,21 +23,58 @@ export default function NotificationsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Notifications" description="Unread notifications are highlighted, with actions to read all, delete, and navigate directly." actions={<button className="btn secondary" onClick={readAll}>Read all notifications</button>} />
-      {!visible.length ? <EmptyState title="No notifications" description="This section will update when a new notification arrives." /> : (
-        <div className="grid">
+      {/* هدر صفحه: دکمه Read All رو با استایل تعاملی جدیدمون ست کردیم */}
+      <PageHeader 
+        title="Notifications" 
+        description="Unread notifications are highlighted, with actions to read all, delete, and navigate directly." 
+        actions={
+          <button className="btn-interactive approve" style={{ height: '40px', padding: '0 16px', fontSize: '13px' }} onClick={readAll}>
+            <i className="fas fa-check-double"></i> Read all notifications
+          </button>
+        } 
+      />
+      
+      {!visible.length ? (
+        <EmptyState title="No notifications" description="This section will update when a new notification arrives." />
+      ) : (
+        <div className="grid" style={{ gap: '14px' }}>
           {visible.map((item) => (
-            <article key={item.id} className={`notification ${item.isRead ? '' : 'unread'}`}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                <div><strong>{item.title}</strong><p className="muted">{item.message}</p></div>
-                {!item.isRead ? <span className="badge secondary">Unread</span> : <span className="badge">Read</span>}
+            <article key={item.id} className={`premium-notification-card ${item.isRead ? 'read' : 'unread'}`}>
+              
+              {/* ردیف اصلی نوتیفیکیشن */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <strong style={{ color: '#fff', fontSize: '16px' }}>{item.title}</strong>
+                    {/* بج وضعیت به صورت یک نقطه درخشان یا مینی بج محو */}
+                    <span className={`notif-status-tag ${item.isRead ? 'read' : 'unread'}`}>
+                      {item.isRead ? 'Read' : 'Unread'}
+                    </span>
+                  </div>
+                  <p className="muted" style={{ margin: '8px 0 12px 0', fontSize: '14px', lineHeight: '1.6' }}>{item.message}</p>
+                  <small className="muted" style={{ fontSize: '12px', opacity: 0.5 }}>{formatDate(item.createdAt)}</small>
+                </div>
+  
+                {/* 🌟 دکمه‌های اکشنِ آیکونیک و مینیاتوری در سمت راست برای خلوت شدن فضا */}
+                <div className="notif-action-cluster" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {item.link ? (
+                    <Link className="notif-mini-btn view" href={item.link} title="View Details">
+                      <i className="fas fa-external-link-alt"></i>
+                    </Link>
+                  ) : null}
+                  
+                  {!item.isRead ? (
+                    <button className="notif-mini-btn check" onClick={() => markRead(item.id)} title="Mark as Read">
+                      <i className="fas fa-check"></i>
+                    </button>
+                  ) : null}
+                  
+                  <button className="notif-mini-btn delete" onClick={() => deleteItem(item.id)} title="Delete Notification">
+                    <i className="fas fa-trash-alt"></i>
+                  </button>
+                </div>
               </div>
-              <small className="muted">{formatDate(item.createdAt)}</small>
-              <div className="notification-actions">
-                {item.link ? <Link className="btn ghost" href={item.link}>View</Link> : null}
-                {!item.isRead ? <button className="btn secondary" onClick={() => markRead(item.id)}>Mark as read</button> : null}
-                <button className="btn danger" onClick={() => deleteItem(item.id)}>Delete notification</button>
-              </div>
+  
             </article>
           ))}
         </div>

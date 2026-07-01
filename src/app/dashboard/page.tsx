@@ -558,25 +558,29 @@ export default function DashboardPage() {
                     />
                   </div>
                 
-                  <div className="notification-actions" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                    {/* دکمه تایید */}
+                  <div className="notification-actions-mobile" style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                    
+                    {/* دکمه تایید (تیک سبز نئونی) */}
                     <button 
-                      className="btn-interactive approve" 
+                      className="btn-interactive approve-mini" 
                       type="button" 
+                      title={t.verification.approve}
                       onClick={() => approveArtist(selectedArtist.id)}
                     >
-                      <i className="fas fa-check-circle"></i> {t.verification.approve}
+                      <i className="fas fa-check" style={{ fontSize: '16px' }}></i>
                     </button>
                     
-                    {/* دکمه رد درخواست */}
+                    {/* دکمه رد (ضربدر قرمز شیشه‌ای) */}
                     <button 
-                      className="btn-interactive reject" 
+                      className="btn-interactive reject-mini" 
                       type="button" 
+                      title={t.verification.reject}
                       disabled={!rejectionReason.trim()} 
                       onClick={() => rejectArtist(selectedArtist.id)}
                     >
-                      <i className="fas fa-times-circle"></i> {t.verification.reject}
+                      <i className="fas fa-times" style={{ fontSize: '16px' }}></i>
                     </button>
+
                   </div>
                 </div>
                 ) : <EmptyState title={t.verification.selectTitle} description={t.verification.selectDescription} />}
@@ -660,7 +664,6 @@ export default function DashboardPage() {
                       })}
                     </div>
 
-                    {/* 🌟 ۳. فرم ارسال پاسخ ادمین */}
                     <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                       <label className="label" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.4 }}>
                         {t.tickets.replyLabel}
@@ -681,7 +684,7 @@ export default function DashboardPage() {
                         disabled={selectedTicket.status === 'closed' || !(ticketReplies[selectedTicket.id] ?? '').trim()} 
                         onClick={() => answerTicket(selectedTicket.id)}
                       >
-                        <i className="fas fa-paper-plane"></i> {t.tickets.sendReply}
+                        <i className="fas fa-paper-plane"></i> 
                       </button>
                       <button 
                         className="btn-interactive reject" 
@@ -689,7 +692,7 @@ export default function DashboardPage() {
                         disabled={selectedTicket.status === 'closed'} 
                         onClick={() => closeTicket(selectedTicket.id)}
                       >
-                        <i className="fas fa-lock"></i> {t.tickets.closeTicket}
+                        <i className="fas fa-lock"></i> 
                       </button>
                     </div>
                   </div>

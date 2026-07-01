@@ -1295,33 +1295,55 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 .premium-action-submit-btn {
-  background: linear-gradient(135deg, #7c3aed, #22d3ee) !important;
+  background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%) !important; /* ترکیب بنفش و سایان نئونی */
   border: none !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important; /* گوشه‌های هماهنگ با اینپوت‌ها */
   color: #ffffff !important;
-  padding: 14px 28px !important;
+  padding: 0 28px !important;
   font-weight: 600 !important;
   font-size: 14px !important;
+  letter-spacing: 0.5px !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4) !important;
+  justify-content: center !important;
+  gap: 10px !important; /* فاصله شیک بین آیکون پلاس و متن */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25) !important; /* هاله درخشش ملایم */
   height: 48px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .premium-action-submit-btn:hover:not(:disabled) {
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(34, 211, 238, 0.6) !important;
+  box-shadow: 0 6px 25px rgba(6, 182, 212, 0.45) !important; /* قوی‌تر شدن درخشش با تم سایان */
+  filter: brightness(1.1) !important;
+}
+
+.premium-action-submit-btn:active:not(:disabled) {
+  transform: translateY(0px) !important;
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3) !important;
+}
+
+.premium-action-submit-btn i,
+.premium-action-submit-btn span[style*="font-size"] {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  transition: transform 0.3s ease !important;
+}
+
+.premium-action-submit-btn:hover i {
+  transform: rotate(90deg) !important;
 }
 
 .premium-action-submit-btn:disabled {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   color: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
   box-shadow: none !important;
   cursor: not-allowed !important;
+  transform: none !important;
 }
 
 .premium-playlists-layout {
@@ -2830,6 +2852,91 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   box-shadow: 0 0 8px #fbbf24 !important;
 }
 
+/* ==========================================================================
+   🔔 سیستم نوتیفیکیشن پرمیوم و شیشه‌ای (Premium Glass Notifications)
+   ========================================================================== */
+
+/* کادر اصلی نوتیفیکیشن */
+.premium-notification-card {
+  background: rgba(255, 255, 255, 0.01) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 16px !important;
+  padding: 18px 20px !important;
+  transition: all 0.25s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* افکت متمایز کننده نوتیفیکیشن‌های خوانده نشده (تم سایان نئونی محو) */
+.premium-notification-card.unread {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+  border-color: rgba(6, 182, 212, 0.15) !important;
+  box-shadow: inset 3px 0 0 #06b6d4 !important; /* یک خط عمودی ظریف سایان سمت چپ */
+}
+
+.premium-notification-card:hover {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  transform: translateX(2px);
+}
+
+/* مینی بج‌های وضعیت درون نوتیف */
+.notif-status-tag {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.notif-status-tag.unread {
+  color: #06b6d4 !important;
+  background: rgba(6, 182, 212, 0.08) !important;
+}
+.notif-status-tag.read {
+  color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* 🎯 دکمه‌های آیکونیک و مینیاتوری سمت راست */
+.notif-mini-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid transparent !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* دکمه ویو (بنفش) */
+.notif-mini-btn.view:hover {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  color: #a855f7 !important;
+}
+
+/* دکمه مارک اس رید (سبز) */
+.notif-mini-btn.check:hover {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  color: #22c55e !important;
+}
+
+/* دکمه دلیت (قرمز) */
+.notif-mini-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  color: #ef4444 !important;
+}
+
+
 /* 📱 تنظیمات رسپانسیو برای موبایل */
 @media (max-width: 1080px) {
   .premium-gradient-hero {
@@ -3250,10 +3357,59 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   white-space: nowrap !important;
 }
 
+/* ==========================================================================
+   🎯 آیکون‌های مینیاتوری تیک و ضربدر + حذف جملات اضافه
+   ========================================================================== */
 
-/* ========================================= */
-/* 🎵 نجاتِ صف پخش (Queue) از به‌هم‌ریختگی روی موبایل */
-/* ========================================= */
+/* دکمه تایید مینی (سبز نئونی شیک با هاور انیمیشنی) */
+.approve-mini {
+  flex: 1 !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  background: rgba(34, 197, 94, 0.1) !important;
+  border: 1px solid rgba(34, 197, 94, 0.2) !important;
+  color: #22c55e !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.approve-mini:hover {
+  background: #22c55e !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.4) !important;
+}
+
+/* دکمه رد مینی (قرمز شیشه‌ای مچ با تکس‌اریا) */
+.reject-mini {
+  flex: 1 !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.reject-mini:hover:not(:disabled) {
+  background: #ef4444 !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4) !important;
+}
+.reject-mini:disabled {
+  background: rgba(255, 255, 255, 0.01) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.1) !important;
+  cursor: not-allowed;
+}
+
+/* ❌ حذف قطعی اون جمله رو مخ قدیمی از کدهای سیستم */
+.dashboard-content p[style*="opacity: 0.85"], 
+.dashboard-content .card p {
+  /* اگر اون جمله‌ی روی مخ داخل تگ p هست، با این خط کلاً مخفیش میکنیم */
+  font-size: 13px;
+}
+
+
+
 @media (max-width: 768px) {
   /* ۱. لغو گرید ۲ ستونه و اجبار به یک خط افقی (Flex) */
   .modal .track-row {
@@ -3298,9 +3454,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
-/* ========================================= */
-/* 📱 تعمیر ظاهر مودال‌ها (لیریکس و صف) در موبایل */
-/* ========================================= */
 @media (max-width: 768px) {
   /* ۱. برگرداندن ضربدر به روبروی عنوان (جلوگیری از رفتن به خط بعد) */
   .modal .page-header {
@@ -3337,7 +3490,6 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
-/* کوچک کردنِ ظریفِ پنلِ لاگین */
 @media (max-width: 768px) {
   /* کوچک کردن تایتلِ عظیمِ قبلی */
   .hero-title {
@@ -3374,3 +3526,242 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   }
 }
 
+   @media (max-width: 992px) {
+    /* ۱. سوییچ کردن گرید دو ستونه به تک ستونه بدون خراب کردن المان‌های داخلی */
+    .dashboard-main-content-wrapper .grid.cols-2 {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+      width: 100% !important;
+    }
+  
+    /* ۲. فیکس کردن کارت‌ها تا دقیقاً فیتِ عرض گوشی بشن */
+    .dashboard-content .card {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      padding: 16px !important;
+      border-radius: 16px !important;
+    }
+  
+    /* ۳. مهار کانتینر جدول (فقط این باکس اسکرول می‌خوره، نه ساختار داخلی جدول) */
+    .dashboard-content .table-wrap {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: auto !important; /* فعال شدن اسکرول افقی محلی */
+      display: block !important;
+      -webkit-overflow-scrolling: touch;
+      margin: 12px 0 !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      border-radius: 12px !important;
+    }
+  
+    /* ۴. برگرداندن جدول به حالت نیتیو (تا ستون‌ها دوباره کنار هم بیفتن) */
+    .dashboard-content table {
+      display: table !important; /* حتماً باید table باشه تا سطر و ستون خراب نشن */
+      width: 100% !important;
+      min-width: 600px !important; /* اجازه بده در پس‌زمینه عریض باشه تا اسکرول بخوره */
+      table-layout: auto !important;
+    }
+  
+    .dashboard-content tr {
+      display: table-row !important;
+    }
+  
+    .dashboard-content th, 
+    .dashboard-content td {
+      display: table-cell !important; /* سلول‌ها کنار هم می‌ایستند */
+      padding: 12px 10px !important;
+      font-size: 12px !important;
+      white-space: nowrap !important; /* جلوگیری از شکستن زشت متون طولانی */
+    }
+  
+    /* ۵. ظریف‌سازی جزئیات پنل زیرین */
+    .detail-panel {
+      padding-top: 12px !important;
+    }
+  }
+
+
+   @media (max-width: 992px) {
+    /* ۱. سوییچ کردن گرید دو ستونه به تک ستونه بدون خراب کردن المان‌های داخلی */
+    .dashboard-main-content-wrapper .grid.cols-2 {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+      width: 100% !important;
+    }
+  
+    /* ۲. فیکس کردن کارت‌ها تا دقیقاً فیتِ عرض گوشی بشن */
+    .dashboard-content .card {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      padding: 16px !important;
+      border-radius: 16px !important;
+    }
+  
+    /* ۳. مهار کانتینر جدول (فقط این باکس اسکرول می‌خوره، نه ساختار داخلی جدول) */
+    .dashboard-content .table-wrap {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: auto !important;
+      display: block !important;
+      -webkit-overflow-scrolling: touch;
+      margin: 12px 0 !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      border-radius: 12px !important;
+    }
+  
+    /* ۴. برگرداندن جدول به حالت نیتیو (تا ستون‌ها دوباره کنار هم بیفتن) */
+    .dashboard-content table {
+      display: table !important;
+      width: 100% !important;
+      min-width: 600px !important;
+      table-layout: auto !important;
+    }
+  
+    .dashboard-content tr {
+      display: table-row !important;
+    }
+  
+    .dashboard-content th, 
+    .dashboard-content td {
+      display: table-cell !important;
+      padding: 12px 10px !important;
+      font-size: 12px !important;
+      white-space: nowrap !important;
+    }
+  
+    /* ۵. ظریف‌سازی جزئیات پنل زیرین */
+    .detail-panel {
+      padding-top: 12px !important;
+    }
+  }
+  
+
+  @media (max-width: 768px) {
+    /* ۱. اجبار لایوت اصلی پلی‌لیست‌ها به تک‌ستون شدن */
+    .premium-playlists-layout {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+      width: 100% !important;
+    }
+  
+    /* ۲. مهار عرض خود کارت شیشه‌ای پلی‌لیست */
+    .premium-playlist-card {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      padding: 16px !important;
+      display: block !important;
+    }
+  
+    /* ۳. جراحی هیرو یا ردیف بالای کارت (عکس، مشخصات و دکمه‌های آیکونیک ویرایش/حذف) */
+    .premium-playlist-hero {
+      display: flex !important;
+      flex-direction: column !important; /* تبدیل ردیف افقی مچاله به چیدمان عمودی مدرن */
+      align-items: center !important;
+      text-align: center !important;
+      gap: 12px !important;
+      width: 100% !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+      padding-bottom: 16px !important;
+    }
+  
+    /* ۴. مهار و فیت کردن بخش متون (نام پلی‌لیست و تعداد تراک‌ها) */
+    .premium-playlist-title {
+      font-size: 16px !important;
+      margin: 4px 0 !important;
+    }
+  
+    .premium-playlist-meta {
+      justify-content: center !important;
+      font-size: 12px !important;
+    }
+  
+    /* ۵. دکمه‌های دایره‌ای ویرایش و حذف (لو رفتن کلاس واقعی) */
+    .premium-playlist-actions {
+      display: flex !important;
+      flex-direction: row !important; /* دکمه‌ها زیر متن، کنار هم بمانند */
+      justify-content: center !important;
+      gap: 12px !important;
+      width: 100% !important;
+      margin-top: 4px !important;
+    }
+  
+    .premium-row-btn {
+      width: 38px !important;
+      height: 38px !important;
+      min-width: 38px !important;
+    }
+  
+    /* ۶. مهار زون تراک‌های پایینی و دکمه قرمز حذف از پلی‌لیست */
+    .premium-playlist-tracks-zone {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+  
+    /* تبدیل کارت‌های تراک داخلی به ساختار فیت در موبایل */
+    .premium-playlist-tracks-zone .track-card,
+    .premium-playlist-tracks-zone div[style*="display: flex"] {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+  
+    /* عریض و راحت کردن دکمه حذف آهنگ در موبایل تا بیرون نزند */
+    .premium-track-remove-btn {
+      width: 100% !important;
+      justify-content: center !important;
+      height: 38px !important;
+      font-size: 12px !important;
+      box-sizing: border-box !important;
+      margin-top: 4px !important;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .sidebar, 
+    .mobile-sidebar,
+    aside {
+      box-sizing: border-box !important;
+      max-width: 280px !important;
+      padding: 20px 16px !important;
+      overflow-y: auto !important;
+    }
+  
+    .sidebar a,
+    .sidebar .menu-item,
+    .mobile-sidebar a {
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      padding: 12px !important;
+      margin-bottom: 4px !important;
+      border-radius: 10px !important;
+      font-size: 14px !important;
+      white-space: nowrap !important;
+    }
+  
+    .sidebar i,
+    .mobile-sidebar i {
+      margin-left: 10px !important;
+      margin-right: 0 !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .premium-action-submit-btn {
+      width: 100% !important; /* توی گوشی کل عرض رو بگیره تا راحت لمس بشه */
+      height: 46px !important;
+      font-size: 13px !important;
+    }
+  }

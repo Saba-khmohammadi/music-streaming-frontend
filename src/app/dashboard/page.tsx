@@ -239,6 +239,7 @@ const dashboardText = {
 } satisfies Record<Language, unknown>;
 
 export default function DashboardPage() {
+  const [isSectionsOpen, setIsSectionsOpen] = useState(true);
   const { currentUser, users, refreshUsers } = useAuth();
   const [activeSection, setActiveSection] = useState<DashboardSection>('verification');
   const [artists, setArtists] = useState<Artist[]>(getCollection('artists'));
@@ -259,6 +260,7 @@ export default function DashboardPage() {
   const isAdmin = currentUser ? canUseAdminPricing(currentUser.role) : false;
   const dashboardTitle = currentUser?.role === 'admin' ? 'admin' : 'support';
 
+  
   useEffect(() => {
     const refreshFinancialData = () => {
       setTracks(getCollection('tracks'));
@@ -279,6 +281,22 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('focus', refreshFinancialData);
       window.removeEventListener('storage-update', handleStorageUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSectionChange = (e: Event) => {
+      const customEvent = e as CustomEvent<DashboardSection>;
+      if (customEvent.detail) {
+        setActiveSection(customEvent.detail); // آپدیت کردن بخش فعال داشبورد
+      }
+    };
+
+    // گوش دادن به کلیک‌های سایدبار اصلی
+    window.addEventListener('change-admin-section', handleSectionChange);
+    
+    return () => {
+      window.removeEventListener('change-admin-section', handleSectionChange);
     };
   }, []);
 
@@ -467,35 +485,15 @@ export default function DashboardPage() {
         title={dashboardTitle}
         actions={<span className="badge">{t.currentRole}: {displayRoleLabel(currentUser.role, language)}</span>}
       />
-
-      <div className="dashboard-shell">
-        <aside className="dashboard-sidebar card">
-          <strong>{t.sidebarTitle}</strong>
-          <div className="dashboard-menu">
-            {availableSections.map((section) => (
-              <button
-                key={section.id}
-                className={`dashboard-menu-item ${safeSection === section.id ? 'active' : ''}`}
-                type="button"
-                onClick={() => setActiveSection(section.id)}
-              >
-                <span>{section.title}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <main className="dashboard-content">
+  
+      {/* 🌟 ۱. کلاس قدیمی "dashboard-shell" را به "dashboard-main-content-wrapper" تغییر دادیم */}
+      <div className="dashboard-main-content-wrapper">
+        
+        {/* 🌟 ۲. تگ <main> بدون هیچ مزاحمتی تمام‌صفحه و عریض لود می‌شود */}
+        <main className="dashboard-content" style={{ width: '100%' }}>
           {safeSection === 'verification' ? (
             <div className="grid cols-2">
               <section className="card">
-                <div className="section-title" style={{ marginTop: 0 }}>
-                  <div>
-                    <h2>{t.sections.verification.title}</h2>
-                  </div>
-                  <span className="badge warning">{formatNumber(pendingArtists.length)} {t.verification.requestCount}</span>
-                </div>
-
                 {!pendingArtists.length ? <EmptyState title={t.verification.emptyTitle} /> : (
                   <div className="table-wrap">
                     <table>
@@ -511,7 +509,11 @@ export default function DashboardPage() {
                           <tr key={artist.id}>
                             <td>{artist.name}</td>
                             <td>{artist.email}</td>
-                            <td><button className="btn secondary" type="button" onClick={() => setSelectedArtistId(artist.id)}>{t.verification.viewSamples}</button></td>
+                            <td>
+                              <button className="btn-view-action" type="button" onClick={() => setSelectedArtistId(artist.id)} title={t.verification.viewSamples}>
+                                <i className="fas fa-eye"></i> 
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -519,39 +521,70 @@ export default function DashboardPage() {
                   </div>
                 )}
               </section>
-
               <section className="card highlight">
                 <h2>{t.verification.detailTitle}</h2>
                 {selectedArtist && selectedArtist.status === 'pending' ? (
                   <div className="detail-panel">
-                    <div>
-                      <span className="badge warning">{t.verification.pending}</span>
-                      <h3>{selectedArtist.name}</h3>
-                      <p className="muted">{selectedArtist.email}</p>
-                      <p>{selectedArtist.bio}</p>
-                    </div>
-                    <div className="sample-list">
-                      {selectedArtist.sampleWorks.length ? selectedArtist.sampleWorks.map((sample) => (
-                        <div className="sample-item" key={sample}>
-                          <span>{sample}</span>
-                          <button className="btn ghost" type="button">{t.verification.playSample}</button>
-                        </div>
-                      )) : <p className="muted">{t.verification.noSamples}</p>}
-                    </div>
-                    <div className="form-row">
-                      <label className="label">{t.verification.rejectionReason}</label>
-                      <textarea className="textarea" value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t.verification.rejectionPlaceholder} />
-                    </div>
-                    <div className="notification-actions">
-                      <button className="btn primary" type="button" onClick={() => approveArtist(selectedArtist.id)}>{t.verification.approve}</button>
-                      <button className="btn danger" type="button" disabled={!rejectionReason.trim()} onClick={() => rejectArtist(selectedArtist.id)}>{t.verification.reject}</button>
-                    </div>
+                  <div>
+                    {/* 🌟 بج زرد رنگ و آن متن خطی اضافه کلاً حذف شدند تا ظاهر پنل نفس بکشد */}
+                    <h3>{selectedArtist.name}</h3>
+                    <p className="muted">{selectedArtist.email}</p>
+                    <p style={{ marginTop: '12px', lineHeight: '1.6', opacity: 0.85 }}>{selectedArtist.bio}</p>
                   </div>
+                
+                  <div className="sample-list" style={{ display: 'grid', gap: '10px' }}>
+                    {selectedArtist.sampleWorks.length ? selectedArtist.sampleWorks.map((sample) => (
+                      <div className="sample-item" key={sample}>
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>
+                          <i className="fas fa-music" style={{ marginRight: '8px', opacity: 0.5 }}></i>
+                          {sample}
+                        </span>
+                        <button className="btn-view-action" type="button" title={t.verification.playSample}>
+                          <i className="fas fa-play" style={{ fontSize: '11px', marginLeft: '2px' }}></i>
+                        </button>
+                      </div>
+                    )) : <p className="muted">{t.verification.noSamples}</p>}
+                  </div>
+                
+                  <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label className="label" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.6 }}>
+                      {t.verification.rejectionReason}
+                    </label>
+                    <textarea 
+                      className="textarea" 
+                      value={rejectionReason} 
+                      onChange={(event) => setRejectionReason(event.target.value)} 
+                      placeholder={t.verification.rejectionPlaceholder} 
+                    />
+                  </div>
+                
+                  <div className="notification-actions" style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                    {/* دکمه تایید */}
+                    <button 
+                      className="btn-interactive approve" 
+                      type="button" 
+                      onClick={() => approveArtist(selectedArtist.id)}
+                    >
+                      <i className="fas fa-check-circle"></i> {t.verification.approve}
+                    </button>
+                    
+                    {/* دکمه رد درخواست */}
+                    <button 
+                      className="btn-interactive reject" 
+                      type="button" 
+                      disabled={!rejectionReason.trim()} 
+                      onClick={() => rejectArtist(selectedArtist.id)}
+                    >
+                      <i className="fas fa-times-circle"></i> {t.verification.reject}
+                    </button>
+                  </div>
+                </div>
                 ) : <EmptyState title={t.verification.selectTitle} description={t.verification.selectDescription} />}
               </section>
+              
             </div>
           ) : null}
-
+  
           {safeSection === 'tickets' ? (
             <div className="grid cols-2">
               <section className="card">
@@ -561,7 +594,7 @@ export default function DashboardPage() {
                   </div>
                   <span className="badge">{formatNumber(tickets.length)} {t.tickets.count}</span>
                 </div>
-
+  
                 <div className="table-wrap">
                   <table>
                     <thead>
@@ -587,7 +620,7 @@ export default function DashboardPage() {
                   </table>
                 </div>
               </section>
-
+  
               <section className="card highlight">
                 <h2>{t.tickets.chatTitle}</h2>
                 {selectedTicket ? (
@@ -625,7 +658,7 @@ export default function DashboardPage() {
               </section>
             </div>
           ) : null}
-
+  
           {safeSection === 'audit' ? (
             <section className="card">
               <div className="section-title" style={{ marginTop: 0 }}>
@@ -679,7 +712,7 @@ export default function DashboardPage() {
               </div>
             </section>
           ) : null}
-
+  
           {safeSection === 'pricing' && isAdmin ? (
             <div className="grid cols-2">
               <section className="card">
@@ -697,7 +730,7 @@ export default function DashboardPage() {
                   {pricingSaved ? <span className="badge success">{t.pricing.saved}</span> : null}
                 </form>
               </section>
-
+  
               <section className="card highlight">
                 <h2>{t.pricing.reportsTitle}</h2>
                 <div className="subscription-chart-wrap">

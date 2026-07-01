@@ -25,7 +25,6 @@ function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-
   if (!currentUser) return null;
   const notifications = getCollection('notifications') as AppNotification[];
   const unreadNotifications = notifications.some(
@@ -41,22 +40,73 @@ function Shell({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  const Nav = () => (
-    <nav className="premium-nav-list">
-      {navItems.map((item) => {
-        const isNotifications = item.href === '/notifications';
-        const isActive = pathname.startsWith(item.href);
-        return (
-          <Link key={item.href} href={item.href} className={`premium-nav-link ${isActive ? 'active' : ''}`} onClick={() => setOpen(false)}>
-            <span className="nav-label-wrapper">
-              <span className="nav-text">{item.label}</span>
-              {isNotifications && unreadNotifications ? <span className="notif-dot-glow" /> : null}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(true); // این را بالای بدنه Shell اضافه کن اگر قبلاً نگذاشتی
+
+  const Nav = () => {
+    // ۴ آیتمِ ساب‌منو که قرار است زیر منوی ادمین لود شوند
+    const adminSubItems = [
+      { id: 'verification', label: language === 'fa' ? 'درخواست‌های تایید' : 'Verification requests' },
+      { id: 'tickets', label: language === 'fa' ? 'تیکت‌های پشتیبانی' : 'Support tickets' },
+      { id: 'audit', label: language === 'fa' ? 'حسابرسی' : 'Audit' },
+      { id: 'pricing', label: language === 'fa' ? 'اشتراک‌ها و گزارش‌ها' : 'Subscriptions and reports' },
+    ];
+
+    return (
+      <nav className="premium-nav-list">
+        {navItems.map((item) => {
+          const isNotifications = item.href === '/notifications';
+          const isAdminMenu = item.href === '/dashboard' || item.href === '/admin'; // تشخیص منوی ادمین
+          const isActive = pathname.startsWith(item.href);
+
+          return (
+            <div key={item.href} className="nav-item-group" style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+              {/* لینک اصلی منو */}
+              <Link 
+                href={item.href} 
+                className={`premium-nav-link ${isActive ? 'active' : ''}`} 
+                onClick={() => {
+                  setOpen(false);
+                  if (isAdminMenu) {
+                    setIsAdminMenuOpen(!isAdminMenuOpen); // اگر روی ادمین زد، ساب‌منو باز و بسته شود
+                  }
+                }}
+              >
+                <span className="nav-label-wrapper" style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+                  <span className="nav-text">{item.label}</span>
+                  {isNotifications && unreadNotifications ? <span className="notif-dot-glow" /> : null}
+                  
+                  {/* فلشِ کوچک برای منوی ادمین */}
+                  {isAdminMenu && (
+                    <i className={`fas fa-chevron-${isAdminMenuOpen ? 'up' : 'down'}`} style={{ fontSize: '10px', opacity: 0.5 }}></i>
+                  )}
+                </span>
+              </Link>
+
+              {/* رندر کردن ۴ زیرمنو دقیقاً زیرِ گزینه‌ی ادمین */}
+              {isAdminMenu && isAdminMenuOpen && (
+                <div className="sidebar-sub-menu">
+                  {adminSubItems.map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        // شلیک کاستوم ایونت به صفحه داشبورد برای عوض کردن سکشن فعال
+                        window.dispatchEvent(new CustomEvent('change-admin-section', { detail: sub.id }));
+                        router.push('/dashboard');
+                      }}
+                      className="sidebar-sub-item"
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    );
+  };
 
   return (
     <div className="premium-app-layout">

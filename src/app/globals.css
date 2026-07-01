@@ -132,11 +132,130 @@ img { display: block; max-width: 100%; }
 .textarea { min-height: 120px; resize: vertical; }
 .input:focus, .select:focus, .textarea:focus { border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 4px rgba(139,92,246,.12); }
 .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.table-wrap { overflow-x: auto; border-radius: 18px; border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; min-width: 760px; background: rgba(255,255,255,.03); }
-th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
-th { color: #ddd6fe; font-size: 14px; background: rgba(139,92,246,.08); }
-tr:last-child td { border-bottom: 0; }
+
+
+/* دکمه اکشن چشم */
+.btn-view-action {
+  background: rgba(139, 92, 246, 0.06) !important;
+  border: 1px solid rgba(139, 92, 246, 0.15) !important;
+  color: #c084fc !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-view-action:hover {
+  background: #a855f7 !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4) !important;
+}
+
+
+.detail-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+}
+
+/* باکسِ فایل دمو یا سمپل کارها */
+.sample-item {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 14px 18px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* تکس‌اریا و فیلدهای متنی لوکس */
+.dashboard-content .textarea {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  transition: all 0.2s ease !important;
+  resize: vertical;
+}
+
+.dashboard-content .textarea:focus {
+  border-color: rgba(139, 92, 246, 0.5) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15) !important;
+  outline: none !important;
+}
+
+
+
+/* ==========================================================================
+   🛠️ بازسازی کامل جدول داشبورد به سبک پرمیوم و شیشه‌ای
+   ========================================================================== */
+
+/* کانتینر دور جدول */
+.dashboard-content .table-wrap {
+  background: rgba(0, 0, 0, 0.2) !important; /* یک هاله مشکی عمیق زیر جدول */
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 16px !important;
+  padding: 8px !important;
+  overflow-x: auto !important;
+}
+
+/* خودِ جدول ادمین */
+.dashboard-content table {
+  width: 100% !important;
+  min-width: 600px !important;
+  border-collapse: collapse !important;
+  table-layout: auto !important; /* 👈 آزاد کردن عرض ستون‌ها برای جلوگیری از مچاله شدن */
+}
+
+/* هدر مینیمال جدول */
+.dashboard-content th {
+  background: transparent !important; /* حذف اون رنگ بنفش کدر قدیمی */
+  color: rgba(255, 255, 255, 0.35) !important; /* خاکستری مات باکلاس */
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  padding: 14px 20px !important;
+  text-align: left !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important; /* خط جداکننده فوق ظریف */
+}
+
+/* ردیف‌های جدول */
+.dashboard-content tbody tr {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* افکت هاور شیشه‌ای و نئونی وقتی موس میره روی ردیف */
+.dashboard-content tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* سلول‌های جدول */
+.dashboard-content td {
+  padding: 16px 20px !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 14px !important;
+  vertical-align: middle !important;
+  border: none !important; /* حذف کادرهای اضافه */
+}
+
+/* تراز کردنِ ستونِ آیکون چشم (آخرین ستون) */
+.dashboard-content td:last-child {
+  display: flex !important;
+  justify-content: flex-start !important;
+}
+
 .cover { width: 100%; aspect-ratio: 1; border-radius: 18px; object-fit: cover; margin-bottom: 14px; }
 .track-row { display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,.04); }
 .track-row img { width: 58px; height: 58px; border-radius: 14px; object-fit: cover; }
@@ -771,16 +890,200 @@ html[dir="rtl"] .player { direction: ltr; }
 .notif-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, .16); flex: 0 0 auto; }
 .avatar-preview { width: 120px; height: 120px; border-radius: 30px; object-fit: cover; border: 2px solid rgba(255,255,255,.16); }
 
-.dashboard-shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
-.dashboard-sidebar { position: sticky; top: 96px; display: grid; gap: 14px; }
-.dashboard-menu { display: grid; gap: 10px; }
-.dashboard-menu-item {
-  width: 100%; border: 1px solid var(--border); border-radius: 18px; padding: 14px; text-align: left;
-  color: var(--subtle); background: rgba(255,255,255,.04); display: grid; gap: 6px;
+
+.sidebar-dropdown-toggle strong {
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
 }
-.dashboard-menu-item span { color: white; font-weight: 800; }
+
+.dashboard-menu-item {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.05) !important; /* یک خط راهنمای عمودی سمت چپ */
+  border-radius: 0 !important; /* حذف گردیِ دکمه‌ها برای حالت لیستی */
+  padding: 10px 16px !important;
+  text-align: left !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.dashboard-menu-item span { 
+  font-weight: 500 !important; 
+  color: inherit !important; 
+}
+
+.dashboard-sidebar strong {
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  color: var(--muted) !important;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.dashboard-menu { display: grid; gap: 10px; }
+
+.dashboard-menu-item {
+  background: transparent !important; /* حذف اون پس‌زمینه سفیدِ کدر */
+  border: 1px solid transparent !important; /* کادر پیش‌فرض حذف */
+  padding: 10px 16px !important; /* پدینگ کمتر و کشیده‌تر */
+  border-radius: 12px !important; /* گوشه‌های مدرن‌تر */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dashboard-menu-item:hover, 
+.dashboard-menu-item.active {
+  background: rgba(139, 92, 246, 0.08) !important; /* بنفشِ بسیار ملایم شیشه‌ای */
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  transform: translateX(4px) !important; /* به جای بالا رفتن، یه ذره میره سمت راست */
+}
+
+.dashboard-menu-item.active span {
+  color: #a855f7 !important; /* رنگ متنِ فعال بنفش بشه */
+}
+
+.dashboard-menu-item:hover:not(.active) {
+  color: #ffffff !important;
+  border-left-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  padding-left: 20px !important; /* افکتِ جابه‌جاییِ نرم به سمت راست */
+}
+
+.sidebar-sub-menu {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding-left: 24px !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+}
+
+.sidebar-sub-item {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 13px !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar-sub-item:hover {
+  color: #a855f7 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.dashboard-main-content-wrapper {
+  width: 100% !important;
+  margin-top: 20px !important;
+}
+
+.dashboard-content {
+  min-width: 0;
+}
+
+.dashboard-content .grid.cols-2 {
+  display: grid !important;
+  grid-template-columns: 1.4fr 1fr !important;
+  gap: 24px !important;
+  align-items: start !important;
+}
+
+
+/* تنظیم ساختار دو ستونه اصلی که تعادل داشته باشه (چپ عریض‌تر، راست جمع‌وجورتر) */
+.dashboard-content .grid.cols-2 {
+  display: grid !important;
+  grid-template-columns: 1.4fr 1fr !important; /* ستون چپ فضای بیشتری برای جدول داره */
+  gap: 24px !important;
+  align-items: start !important;
+}
+
+/* زیباتر کردن جدول و دکمه جدید چشم */
+.btn-view-action {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #a855f7 !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-view-action:hover {
+  background: rgba(139, 92, 246, 0.2) !important;
+  transform: scale(1.05);
+}
+
+/* شیشه‌ای کردنِ کارت‌های داخلی و حذف سایه‌های زشت قدیمی */
+.dashboard-content .card {
+  background: rgba(255, 255, 255, 0.01) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+}
+
+/* پنل جزئیات سمت راست (Request details) */
+.detail-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important; /* ایجاد فاصله بین المان‌ها */
+}
+
+/* باکسِ پلی‌لیست یا نمونه کارها */
+.sample-item {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  padding: 12px 16px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* استایلِ فیلد متنی دلیل رد درخواست */
+.dashboard-content .textarea {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 14px !important;
+  color: #fff !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.dashboard-content .textarea:focus {
+  border-color: #a855f7 !important;
+  outline: none !important;
+}
+
+.dashboard-content .card {
+  background: rgba(255, 255, 255, 0.01) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 20px !important; /* لبه‌های گردِ باکلاس */
+  padding: 24px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dashboard-content .card.highlight {
+  background: rgba(139, 92, 246, 0.02) !important; /* یه هاله بنفش فوق‌العاده محو */
+  border-color: rgba(139, 92, 246, 0.1) !important;
+}
+
 .dashboard-menu-item small { color: var(--muted); line-height: 1.7; }
-.dashboard-menu-item:hover, .dashboard-menu-item.active { border-color: rgba(139,92,246,.52); background: rgba(139,92,246,.16); transform: translateY(-1px); }
 .dashboard-content { min-width: 0; }
 .detail-panel, .chatbox { display: grid; gap: 16px; }
 .sample-list { display: grid; gap: 10px; }
@@ -819,28 +1122,19 @@ html[dir="rtl"] .chat-message.user { justify-self: end; }
   .chat-message { max-width: 100%; }
 }
 
-/* Dashboard polish */
-.dashboard-shell { grid-template-columns: 260px minmax(0, 1fr); gap: 22px; }
-.dashboard-sidebar { gap: 16px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035)); }
-.dashboard-sidebar > strong { font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: #e0e7ff; }
-.dashboard-menu { gap: 12px; }
-.dashboard-menu-item {
-  min-height: 54px;
-  align-items: center;
-  padding: 15px 16px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.035);
+
+.dashboard-main-content-wrapper .grid.cols-2 {
+  display: grid !important;
+  grid-template-columns: 1.3fr 1fr !important; 
+  gap: 24px !important;
+  align-items: start !important;
+  width: 100% !important;
 }
-.dashboard-menu-item span { overflow-wrap: anywhere; }
-.dashboard-menu-item.active { box-shadow: inset 3px 0 0 var(--primary-2); }
+
 html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--primary-2); }
-.dashboard-content .card { min-width: 0; }
+
 .dashboard-content .section-title { align-items: flex-start; margin-bottom: 18px; }
 .dashboard-content .section-title h2 { margin-bottom: 0; }
-.dashboard-content .table-wrap { background: rgba(255,255,255,.025); }
-.dashboard-content table { min-width: 680px; table-layout: fixed; }
-.dashboard-content th,
-.dashboard-content td { overflow-wrap: anywhere; }
 .dashboard-content td:nth-child(3),
 .dashboard-content td:nth-child(4),
 .dashboard-content th:nth-child(3),
@@ -1068,10 +1362,10 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 .premium-playlist-cover-container {
-  padding: 0 !important; /* پدینگ رو صفر می‌کنیم تا رنگِ پشتش دیده نشه */
-  background: transparent !important; /* پس‌زمینه رو نامرئی می‌کنیم */
+  padding: 0 !important; 
+  background: transparent !important; 
   border-radius: 16px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important; /* فقط یه سایه نرم می‌ذاریم */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important; 
 }
 
 .premium-playlist-img {
@@ -2290,6 +2584,93 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 .community-text span {
   color: rgba(255, 255, 255, 0.8) !important;
   font-size: 14px !important;
+}
+
+/* ==========================================================================
+   🎨 استایل‌های پرمیوم و ری‌اکتیو بخش جزییات درخواست
+   ========================================================================== */
+
+/* بهینه‌سازی کادر توضیحات آرتیست */
+.detail-panel h3 {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.detail-panel p.muted {
+  font-size: 13px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  margin: 0 0 12px 0 !important;
+}
+
+/* دکمه‌های تعاملی جدید و فوق‌العاده ری‌اکتیو */
+.btn-interactive {
+  flex: 1 !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* دکمه تایید بنفش نئونی با افکت درخشش در هاور */
+.btn-interactive.approve {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important;
+}
+
+.btn-interactive.approve:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* دکمه رد درخواست شیشه‌ای-قرمز */
+.btn-interactive.reject {
+  background: rgba(239, 68, 68, 0.06) !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+}
+
+.btn-interactive.reject:hover:not(:disabled) {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* حالت غیرفعال بودن دکمه رد (وقتی متنی نوشته نشده) */
+.btn-interactive.reject:disabled {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.15) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* انیمیشن زنده باز شدن چت‌باکس یا کارت در زمان کلیک رو چشم */
+.detail-panel, .chatbox {
+  animation: slideInUpPremium 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@keyframes slideInUpPremium {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 📱 تنظیمات رسپانسیو برای موبایل */

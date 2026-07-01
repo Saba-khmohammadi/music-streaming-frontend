@@ -74,7 +74,7 @@ export default function PlaylistsPage() {
             />
           </div>
           <button className="premium-action-submit-btn" disabled={!canCreate}>
-            <i className="fas fa-plus"></i> Create playlist
+            <i className="fas fa-plus"></i> 
           </button>
         </form>
       </section>

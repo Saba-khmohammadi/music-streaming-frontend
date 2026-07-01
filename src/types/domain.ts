@@ -72,6 +72,7 @@ export interface Track {
   earlyAccessStartedAt?: string;
   listeners: number;
   streams: number;
+  uniqueStreamerIds?: string[];
   lyrics?: string;
   genre: string;
   collaborators?: string[];

@@ -109,8 +109,4 @@ export const displayRoleLabel = (role: UserRole, language: UserPreferences['lang
 export const displaySubscriptionLabel = (tier: SubscriptionTier, language: UserPreferences['language']) =>
   language === 'fa' ? subscriptionLabelsFa[tier] : subscriptionLabels[tier];
 
-export const calculateArtistReward = (uniqueListeners: number, streams: number) => {
-  const listenerWeight = uniqueListeners * 4500;
-  const streamWeight = streams * 900;
-  return Math.round(listenerWeight + streamWeight);
-};
+export const calculateArtistReward = (uniqueStreamers: number, streamers: number) => uniqueStreamers * 30 + streamers * 10;

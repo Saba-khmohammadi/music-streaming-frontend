@@ -1,14 +1,14 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/context/AuthContext';
-import { canUseAdminPricing, canUseSupportDashboard, displayRoleLabel } from '@/lib/rules';
+import { calculateArtistReward, canUseAdminPricing, canUseSupportDashboard, displayRoleLabel } from '@/lib/rules';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { getCollection, newId, setCollection } from '@/lib/storage';
-import type { AppNotification, Artist, AuditRow, SubscriptionPricing, Ticket, UserPreferences } from '@/types/domain';
+import type { AppNotification, Artist, AuditRow, SubscriptionPricing, Ticket, Track, UserPreferences } from '@/types/domain';
 
 type DashboardSection = 'verification' | 'tickets' | 'audit' | 'pricing';
 type Language = UserPreferences['language'];
@@ -108,6 +108,7 @@ const dashboardText = {
       uniqueListeners: 'شنوندگان منحصربه‌فرد',
       streams: 'استریم‌های ثبت شده',
       reward: 'مبلغ پاداش محاسبه شده',
+      rewardFormula: 'فرمول محاسبه پاداش',
       paymentStatus: 'وضعیت پرداخت',
       paymentAction: 'عملیات پرداخت',
       unknownArtist: 'هنرمند نامشخص',
@@ -206,6 +207,7 @@ const dashboardText = {
       uniqueListeners: 'Unique listeners',
       streams: 'Registered streams',
       reward: 'Calculated reward',
+      rewardFormula: 'Reward formula',
       paymentStatus: 'Payment status',
       paymentAction: 'Payment action',
       unknownArtist: 'Unknown artist',
@@ -241,7 +243,8 @@ export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState<DashboardSection>('verification');
   const [artists, setArtists] = useState<Artist[]>(getCollection('artists'));
   const [tickets, setTickets] = useState<Ticket[]>(getCollection('tickets'));
-  const [auditRows] = useState<AuditRow[]>(getCollection('auditRows'));
+  const [tracks, setTracks] = useState<Track[]>(getCollection('tracks'));
+  const [storedAuditRows, setStoredAuditRows] = useState<AuditRow[]>(getCollection('auditRows'));
   const [pricing, setPricing] = useState<SubscriptionPricing>(getCollection('pricing'));
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -255,6 +258,63 @@ export default function DashboardPage() {
   const paymentStatusLabel = paymentStatusLabels[language];
   const isAdmin = currentUser ? canUseAdminPricing(currentUser.role) : false;
   const dashboardTitle = currentUser?.role === 'admin' ? 'admin' : 'support';
+
+  useEffect(() => {
+    const refreshFinancialData = () => {
+      setTracks(getCollection('tracks'));
+      setStoredAuditRows(getCollection('auditRows'));
+    };
+
+    const handleStorageUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ key?: string }>).detail;
+      if (!detail?.key || detail.key === 'tracks' || detail.key === 'auditRows' || detail.key === 'reset') {
+        refreshFinancialData();
+      }
+    };
+
+    refreshFinancialData();
+    window.addEventListener('focus', refreshFinancialData);
+    window.addEventListener('storage-update', handleStorageUpdate);
+
+    return () => {
+      window.removeEventListener('focus', refreshFinancialData);
+      window.removeEventListener('storage-update', handleStorageUpdate);
+    };
+  }, []);
+
+  const auditRows = useMemo<AuditRow[]>(() => {
+    const currentMonth = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date());
+
+    return artists.map((artist) => {
+      const artistTracks = tracks.filter((track) => track.artistId === artist.id);
+      const storedRow = storedAuditRows.find((row) => row.artistId === artist.id);
+      const uniqueStreamerIds = new Set<string>();
+      let hasTrackedUniqueStreamers = false;
+
+      artistTracks.forEach((track) => {
+        if (track.uniqueStreamerIds?.length) {
+          hasTrackedUniqueStreamers = true;
+          track.uniqueStreamerIds.forEach((streamerId) => uniqueStreamerIds.add(streamerId));
+        }
+      });
+
+      const trackStreamTotal = artistTracks.reduce((sum, track) => sum + (track.streams ?? 0), 0);
+      const streamers = artistTracks.length ? trackStreamTotal : storedRow?.streams ?? artist.monthlyStreams ?? 0;
+      const uniqueStreamers = hasTrackedUniqueStreamers
+        ? uniqueStreamerIds.size
+        : storedRow?.uniqueListeners ?? artist.monthlyListeners ?? 0;
+
+      return {
+        id: storedRow?.id ?? `audit-${artist.id}`,
+        artistId: artist.id,
+        month: storedRow?.month ?? currentMonth,
+        uniqueListeners: uniqueStreamers,
+        streams: streamers,
+        reward: calculateArtistReward(uniqueStreamers, streamers),
+        status: storedRow?.status ?? 'pending'
+      };
+    });
+  }, [artists, storedAuditRows, tracks]);
 
   const availableSections = useMemo(
     () => [
@@ -359,6 +419,23 @@ export default function DashboardPage() {
 
   const closeTicket = (ticketId: string) => {
     persistTickets(tickets.map((ticket) => ticket.id === ticketId ? { ...ticket, status: 'closed' } : ticket));
+  };
+
+  const markAuditRowPaid = (row: AuditRow) => {
+    if (!isAdmin || row.status === 'paid') return;
+
+    const paidRow: AuditRow = {
+      ...row,
+      status: 'paid'
+    };
+
+    const hasExistingRow = storedAuditRows.some((item) => item.artistId === row.artistId && item.month === row.month);
+    const nextAuditRows = hasExistingRow
+      ? storedAuditRows.map((item) => item.artistId === row.artistId && item.month === row.month ? { ...item, ...paidRow } : item)
+      : [paidRow, ...storedAuditRows];
+
+    setStoredAuditRows(nextAuditRows);
+    setCollection('auditRows', nextAuditRows);
   };
 
   const savePricing = (event: FormEvent<HTMLFormElement>) => {
@@ -564,7 +641,9 @@ export default function DashboardPage() {
                       <th>{t.audit.uniqueListeners}</th>
                       <th>{t.audit.streams}</th>
                       <th>{t.audit.reward}</th>
+                      <th>{t.audit.rewardFormula}</th>
                       <th>{t.audit.paymentStatus}</th>
+                      {isAdmin ? <th>{t.audit.paymentAction}</th> : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -576,7 +655,22 @@ export default function DashboardPage() {
                           <td>{formatNumber(row.uniqueListeners)}</td>
                           <td>{formatNumber(row.streams)}</td>
                           <td>{formatCurrency(row.reward)}</td>
+                          <td>
+                            <code>{`(${formatNumber(row.uniqueListeners)} × 30) + (${formatNumber(row.streams)} × 10)`}</code>
+                          </td>
                           <td><span className={`badge ${row.status === 'paid' ? 'success' : 'warning'}`}>{paymentStatusLabel[row.status]}</span></td>
+                          {isAdmin ? (
+                            <td>
+                              <button
+                                className={`btn ${row.status === 'paid' ? 'secondary' : 'primary'}`}
+                                type="button"
+                                disabled={row.status === 'paid'}
+                                onClick={() => markAuditRowPaid(row)}
+                              >
+                                {row.status === 'paid' ? paymentStatusLabel.paid : t.audit.markPaid}
+                              </button>
+                            </td>
+                          ) : null}
                         </tr>
                       );
                     })}

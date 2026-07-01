@@ -50,6 +50,6 @@ describe('subscription and access rules', () => {
   });
 
   it('calculates deterministic artist rewards', () => {
-    expect(calculateArtistReward(100, 1000)).toBe(1350000);
+    expect(calculateArtistReward(100, 1000)).toBe(13000);
   });
 });

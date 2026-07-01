@@ -6,9 +6,9 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
-  useRef
+  useState
 } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import {
   getCollection,
   readStore,
@@ -41,6 +41,7 @@ interface PlayerContextValue {
 const PlayerContext = createContext<PlayerContextValue | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
+  const { currentUser } = useAuth();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentTrackId, setCurrentTrackId] = useState<string | undefined>();
   const [queueIds, setQueueIds] = useState<string[]>([]);
@@ -49,14 +50,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState(0);
   const [repeatMode, setRepeat] = useState<RepeatMode>('off');
   const [shuffle, setShuffle] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const countedTrackRef = useRef<string | null>(null);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
   const currentTrack = tracks.find((track) => track.id === currentTrackId) ?? null;
   const queue = queueIds.map((id) => tracks.find((track) => track.id === id)).filter(Boolean) as Track[];
 
   useEffect(() => {
-    audioRef.current = new Audio();
+    setAudioElement(new Audio());
   }, []);
 
   useEffect(() => {
@@ -64,11 +64,18 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       setTracks(getCollection('tracks'));
     };
 
+    const handleStorageUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ key?: string }>).detail;
+      if (!detail?.key || detail.key === 'tracks' || detail.key === 'reset') refreshTracks();
+    };
+
     refreshTracks();
 
     window.addEventListener('focus', refreshTracks);
+    window.addEventListener('storage-update', handleStorageUpdate);
     return () => {
       window.removeEventListener('focus', refreshTracks);
+      window.removeEventListener('storage-update', handleStorageUpdate);
     };
   }, []);
 
@@ -89,63 +96,70 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!audioRef.current || !currentTrack) return;
+    if (!audioElement || !currentTrack) return;
 
-    audioRef.current.pause();
-    audioRef.current.src = currentTrack.audioUrl ?? '';
-    audioRef.current.load();
+    audioElement.pause();
+    audioElement.src = currentTrack.audioUrl ?? '';
+    audioElement.load();
 
     if (isPlaying) {
-      audioRef.current.play().catch(() => {});
+      audioElement.play().catch(() => {});
     }
-  }, [currentTrack, isPlaying]);
+  }, [audioElement, currentTrack, isPlaying]);
 
-  // FIX: Listen to audio timeupdate event for accurate progress
   useEffect(() => {
-    if (!audioRef.current) return;
-
-    const audio = audioRef.current;
+    if (!audioElement) return;
 
     const updateProgress = () => {
-      setProgress(audio.currentTime);
+      setProgress(audioElement.currentTime);
     };
 
-    audio.addEventListener("timeupdate", updateProgress);
+    audioElement.addEventListener('timeupdate', updateProgress);
 
     return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
+      audioElement.removeEventListener('timeupdate', updateProgress);
     };
-  }, []);
+  }, [audioElement]);
 
   useEffect(() => {
     writeStore('player', { currentTrackId, queueIds, volume, repeatMode, shuffle });
   }, [currentTrackId, queueIds, repeatMode, shuffle, volume]);
 
-  const playTrack = useCallback((trackId: string, nextQueueIds?: string[]) => {
-    const latestTracks = getCollection('tracks');
+  const registerStream = useCallback((trackId: string) => {
+    const streamerId = currentUser?.id;
+    const latestTracks = getCollection('tracks') as Track[];
+    let trackFound = false;
 
-    let updatedTracks = latestTracks;
+    const updatedTracks = latestTracks.map((track) => {
+      if (track.id !== trackId) return track;
 
-    if (countedTrackRef.current !== trackId) {
-      updatedTracks = latestTracks.map(track =>
-        track.id === trackId
-          ? {
-              ...track,
-              listeners: (track.listeners ?? 0) + 1,
-              streams: (track.streams ?? 0) + 1,
-            }
-          : track
-      );
+      trackFound = true;
+      const uniqueStreamerIds = track.uniqueStreamerIds ?? [];
+      const shouldAddUniqueStreamer = Boolean(streamerId && !uniqueStreamerIds.includes(streamerId));
 
-      countedTrackRef.current = trackId;
+      return {
+        ...track,
+        listeners: (track.listeners ?? 0) + 1,
+        streams: (track.streams ?? 0) + 1,
+        uniqueStreamerIds: shouldAddUniqueStreamer && streamerId
+          ? [...uniqueStreamerIds, streamerId]
+          : uniqueStreamerIds
+      };
+    });
 
-      setCollection("tracks", updatedTracks);
+    if (!trackFound) {
+      setTracks(latestTracks);
+      return latestTracks;
     }
 
+    setCollection('tracks', updatedTracks);
     setTracks(updatedTracks);
+    return updatedTracks;
+  }, [currentUser?.id]);
 
+  const playTrack = useCallback((trackId: string, nextQueueIds?: string[]) => {
+    registerStream(trackId);
     setCurrentTrackId(trackId);
-
     setQueueIds(
       nextQueueIds && nextQueueIds.length > 0
         ? nextQueueIds
@@ -154,56 +168,66 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
               ? prev
               : [trackId, ...prev]
     );
-
     setProgress(0);
     setPlaying(true);
-  }, []);
+  }, [registerStream]);
 
   const togglePlay = useCallback(() => setPlaying((value) => !value), []);
 
   const next = useCallback(() => {
     if (!queueIds.length || !currentTrackId) return;
+
     if (repeatMode === 'one') {
+      registerStream(currentTrackId);
       setProgress(0);
       setPlaying(true);
       return;
     }
+
     const index = queueIds.indexOf(currentTrackId);
     const nextIndex = shuffle ? Math.floor(Math.random() * queueIds.length) : index + 1;
-    if (nextIndex >= queueIds.length) {
-      if (repeatMode === 'all') setCurrentTrackId(queueIds[0]);
-      else setPlaying(false);
-    } else {
-      setCurrentTrackId(queueIds[nextIndex]);
+    const nextTrackId = nextIndex >= queueIds.length
+      ? repeatMode === 'all'
+        ? queueIds[0]
+        : undefined
+      : queueIds[nextIndex];
+
+    if (!nextTrackId) {
+      setPlaying(false);
+      return;
     }
+
+    registerStream(nextTrackId);
+    setCurrentTrackId(nextTrackId);
     setProgress(0);
-  }, [currentTrackId, queueIds, repeatMode, shuffle]);
+    setPlaying(true);
+  }, [currentTrackId, queueIds, registerStream, repeatMode, shuffle]);
 
   const previous = useCallback(() => {
     if (!queueIds.length || !currentTrackId) return;
     const index = queueIds.indexOf(currentTrackId);
-    setCurrentTrackId(queueIds[Math.max(0, index - 1)]);
+    const previousTrackId = queueIds[Math.max(0, index - 1)];
+    registerStream(previousTrackId);
+    setCurrentTrackId(previousTrackId);
     setProgress(0);
-  }, [currentTrackId, queueIds]);
+    setPlaying(true);
+  }, [currentTrackId, queueIds, registerStream]);
 
   const setVolume = useCallback((value: number) => {
     const volumeValue = Math.max(0, Math.min(100, value));
     setPlayerVolume(volumeValue);
-    if (audioRef.current) {
-      audioRef.current.volume = volumeValue / 100;
+    if (audioElement) {
+      audioElement.volume = volumeValue / 100;
     }
-  }, []);
+  }, [audioElement]);
 
-  // FIX: Seek now actually moves the audio to the correct position
   const seek = useCallback((value: number) => {
     const newTime = Math.max(0, value);
-
     setProgress(newTime);
-
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
+    if (audioElement) {
+      audioElement.currentTime = newTime;
     }
-  }, []);
+  }, [audioElement]);
   
   const setRepeatMode = useCallback((mode: RepeatMode) => setRepeat(mode), []);
   const toggleShuffle = useCallback(() => setShuffle((value) => !value), []);

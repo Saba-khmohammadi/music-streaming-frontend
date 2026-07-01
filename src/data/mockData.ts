@@ -310,8 +310,9 @@ export const tickets: Ticket[] = [
 ];
 
 export const auditRows: AuditRow[] = [
-  { id: 'audit-1', artistId: 'artist-1', month: 'May 2026', uniqueListeners: 8420, streams: 21100, reward: 74200000, status: 'pending' },
-  { id: 'audit-2', artistId: 'artist-2', month: 'May 2026', uniqueListeners: 4900, streams: 13200, reward: 45300000, status: 'paid' }
+  { id: 'audit-1', artistId: 'artist-1', month: 'May 2026', uniqueListeners: 8420, streams: 21100, reward: 463600, status: 'pending' },
+  { id: 'audit-2', artistId: 'artist-2', month: 'May 2026', uniqueListeners: 4900, streams: 13200, reward: 279000, status: 'paid' },
+  { id: 'audit-3', artistId: 'artist-3', month: 'May 2026', uniqueListeners: 300, streams: 900, reward: 18000, status: 'pending' }
 ];
 
 export const subscriptionPricing: SubscriptionPricing = {

@@ -173,32 +173,52 @@ export default function SupportPage() {
 
   return (
     <AppShell>
-      <PageHeader title={t.title} description={t.description} />
+      {/* هدر صفحه با ساختار تراز شده */}
+      <div className="verification-header-zone" style={{ marginBottom: '28px' }}>
+        <h1 className="page-title" style={{ fontWeight: 800, letterSpacing: '-1px' }}>{t.title}</h1>
+        <p className="muted" style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.6 }}>{t.description}</p>
+      </div>
 
-      <div className="grid cols-2">
-        <section className="card">
-          <h2>{t.newTicket}</h2>
+      {/* 🌟 اعمال گرید اختصاصی پشتیبانی برای مهار تداخل موبایل */}
+      <div className="grid cols-2 premium-support-grid">
+        
+        {/* باکس سمت چپ: فرم ارسال پیام */}
+        <section className="card premium-support-card">
+          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px', color: '#fff' }}>{t.newTicket}</h2>
           <form className="form" onSubmit={createTicket}>
-            <div className="form-row">
-              <label className="label">{t.subject}</label>
-              <input className="input" name="subject" placeholder={t.subjectPlaceholder} required />
+            <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label className="label premium-label">{t.subject}</label>
+              <input className="input premium-glass-input" name="subject" placeholder={t.subjectPlaceholder} required />
             </div>
-            <div className="form-row">
-              <label className="label">{t.message}</label>
-              <textarea className="textarea" name="message" placeholder={t.messagePlaceholder} required />
+            <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+              <label className="label premium-label">{t.message}</label>
+              <textarea className="textarea premium-glass-textarea" name="message" placeholder={t.messagePlaceholder} required />
             </div>
-            <button className="btn primary" type="submit">{t.create}</button>
-            {createdNotice ? <span className="badge success">{createdNotice}</span> : null}
+            
+            {/* 🌟 استفاده از دکمه نئونی و لوکس جدیدمان */}
+            <button className="premium-action-submit-btn" type="submit" style={{ marginTop: '8px', width: '100%' }}>
+              <i className="fas fa-paper-plane"></i> {t.create}
+            </button>
+            {createdNotice ? <span className="badge success" style={{ marginTop: '10px', display: 'inline-block' }}>{createdNotice}</span> : null}
           </form>
         </section>
 
-        <section className="card">
-          <div className="section-title" style={{ marginTop: 0 }}>
-            <h2>{t.conversations}</h2>
-            <span className="badge">{myTickets.length}</span>
+        {/* باکس سمت راست: لیست مکالمات */}
+        <section className="card premium-support-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#fff', margin: 0 }}>{t.conversations}</h2>
+            <span className="badge" style={{ background: 'rgba(6, 182, 212, 0.1)', borderColor: 'rgba(6, 182, 212, 0.2)', color: '#22d3ee', fontVariantNumeric: 'tabular-nums' }}>{myTickets.length}</span>
           </div>
 
-          {!myTickets.length ? <EmptyState title={t.noTicketsTitle} description={t.noTicketsDescription} /> : (
+          {!myTickets.length ? (
+            <div className="premium-empty-inside-box">
+              <div className="empty-icon-glow" style={{ width: '48px', height: '48px', fontSize: '18px', marginBottom: '14px' }}>
+                <i className="fas fa-comments"></i>
+              </div>
+              <strong style={{ color: '#fff', fontSize: '15px', display: 'block', marginBottom: '4px' }}>{t.noTicketsTitle}</strong>
+              <p className="muted" style={{ margin: 0, fontSize: '12.5px' }}>{t.noTicketsDescription}</p>
+            </div>
+          ) : (
             <div className="dashboard-menu">
               {myTickets.map((ticket) => (
                 <button
@@ -216,37 +236,57 @@ export default function SupportPage() {
         </section>
       </div>
 
-      <section className="card highlight" style={{ marginTop: 18 }}>
-        <h2>{t.selectedChat}</h2>
+      {/* بخش پایینی: نمایش جزئیات چت */}
+      <section className="card premium-support-card" style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px', color: '#fff' }}>{t.selectedChat}</h2>
         {selectedTicket ? (
           <div className="chatbox">
-            <div>
-              <span className={`badge ${selectedTicket.status === 'closed' ? 'success' : selectedTicket.status === 'open' ? 'warning' : ''}`}>{t.status}: {statusLabel[selectedTicket.status]}</span>
-              <h3>{selectedTicket.subject}</h3>
-              <p className="muted">{selectedTicket.id} · {formatDate(selectedTicket.createdAt)}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 700 }}>{selectedTicket.subject}</h3>
+                <p className="muted" style={{ margin: 0, fontSize: '13px' }}>{selectedTicket.id} · {formatDate(selectedTicket.createdAt)}</p>
+              </div>
+              {/* بج وضعیت نقطه درخشان ادمین */}
+              <span className={`ticket-status-dot ${selectedTicket.status === 'closed' ? 'closed' : 'open'}`}>
+                {statusLabel[selectedTicket.status]}
+              </span>
             </div>
 
+            {/* حباب‌های مدرن چت‌باکس */}
             <div className="chat-messages">
               {selectedTicket.messages.map((message, index) => (
-                <div className={`chat-message ${message.from === 'support' ? 'support' : 'user'}`} key={`${message.createdAt}-${index}`}>
-                  <strong>{message.from === 'support' ? t.support : t.you}</strong>
-                  <p>{message.body}</p>
-                  <small>{formatDate(message.createdAt)}</small>
+                <div className={`chat-message-bubble ${message.from === 'support' ? 'support' : 'user'}`} key={`${message.createdAt}-${index}`}>
+                  <div className="bubble-meta">
+                    <strong>{message.from === 'support' ? t.support : t.you}</strong>
+                    <small>{formatDate(message.createdAt)}</small>
+                  </div>
+                  <p style={{ marginTop: '6px' }}>{message.body}</p>
                 </div>
               ))}
             </div>
 
             {selectedTicket.status === 'closed' ? (
-              <span className="badge warning">{t.closedNotice}</span>
+              <span className="badge warning" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>{t.closedNotice}</span>
             ) : (
-              <div className="form-row">
-                <label className="label">{t.reply}</label>
-                <textarea className="textarea" value={reply} onChange={(event) => setReply(event.target.value)} placeholder={t.replyPlaceholder} />
-                <button className="btn primary" type="button" disabled={!reply.trim()} onClick={sendMessage}>{t.sendReply}</button>
+              <div className="form-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                <label className="label premium-label">{t.reply}</label>
+                <textarea className="textarea premium-glass-textarea" style={{ minHeight: '100px' }} value={reply} onChange={(event) => setReply(event.target.value)} placeholder={t.replyPlaceholder} />
+                
+                <button className="premium-action-submit-btn" type="button" disabled={!reply.trim()} onClick={sendMessage} style={{ alignSelf: 'flex-end', minWidth: '160px' }}>
+                  <i className="fas fa-paper-plane"></i> {t.sendReply}
+                </button>
               </div>
             )}
           </div>
-        ) : <EmptyState title={t.chooseTicket} description={t.chooseTicketDescription} />}
+        ) : (
+          <div className="premium-empty-inside-box">
+            <div className="empty-icon-glow" style={{ width: '48px', height: '48px', fontSize: '18px', marginBottom: '14px' }}>
+              <i className="fas fa-comment-alt"></i>
+            </div>
+            <strong style={{ color: '#fff', fontSize: '15px', display: 'block', marginBottom: '4px' }}>{t.chooseTicket}</strong>
+            <p className="muted" style={{ margin: 0, fontSize: '12.5px' }}>{t.chooseTicketDescription}</p>
+          </div>
+        )}
       </section>
     </AppShell>
   );

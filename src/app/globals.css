@@ -2858,22 +2858,55 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 
 /* کادر اصلی نوتیفیکیشن */
 .premium-notification-card {
-  background: rgba(255, 255, 255, 0.01) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-radius: 16px !important;
   padding: 18px 20px !important;
-  transition: all 0.25s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative;
-  overflow: hidden;
 }
 
-/* افکت متمایز کننده نوتیفیکیشن‌های خوانده نشده (تم سایان نئونی محو) */
 .premium-notification-card.unread {
-  background: linear-gradient(90deg, rgba(6, 182, 212, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-  border-color: rgba(6, 182, 212, 0.15) !important;
-  box-shadow: inset 3px 0 0 #06b6d4 !important; /* یک خط عمودی ظریف سایان سمت چپ */
+  /* یک گرادیانت بسیار ملایم که از چپ با رنگ آبی/سایانِ محو شروع میشه */
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+  border-color: rgba(6, 182, 212, 0.25) !important; /* حاشیه دارک‌سایان */
+  
+  /* ایجاد یک هاله نورِ نئونیِ بسیار محو و نرم در پشته‌ی کارت */
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.08),
+              inset 3px 0 0 #06b6d4 !important; /* خط عمودی نئونیِ مینیاتوری سمت چپ کارت */
+}
+
+.premium-notification-card.unread strong::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  background-color: #06b6d4 !important; /* رنگ نقطه آبی/سایان */
+  border-radius: 50% !important;
+  margin-right: 8px !important; /* فاصله با متن تایتل */
+  box-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4 !important; /* افکت درخشش نئونی نقطه */
+  animation: notifPulse 2s infinite ease-in-out !important; /* انیمیشن نبض زنده */
+  vertical-align: middle !important;
+}
+
+@keyframes notifPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; filter: brightness(1.2); }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* وضعیت نوتیفیکیشن‌های قدیمی و خوانده شده (کاملاً مات و بی‌آزار) */
+.premium-notification-card.read {
+  opacity: 0.65 !important;
+  background: rgba(0, 0, 0, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.premium-notification-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 .premium-notification-card:hover {
@@ -3765,3 +3798,78 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
       font-size: 13px !important;
     }
   }
+
+  /* ==========================================================================
+   🎫 سیستم چت پشتیبانی کاربر پرمیوم (Premium User Support Chat)
+   ========================================================================== */
+
+/* تنظیم تعادل ستون‌های فرم پشتیبانی در دسکتاپ */
+.premium-support-grid {
+  grid-template-columns: 1.2fr 1fr !important;
+  gap: 24px !important;
+}
+
+/* شیشه‌ای و کریستالی کردن کارت‌های پشتیبانی */
+.premium-support-card {
+  background: rgba(255, 255, 255, 0.01) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+}
+
+/* استایل لوکس تکس‌اریا پشتیبانی */
+.premium-glass-textarea {
+  width: 100% !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  min-height: 130px !important;
+  resize: none !important;
+  transition: all 0.25s ease !important;
+}
+.premium-glass-textarea:focus {
+  border-color: #06b6d4 !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2) !important;
+  outline: none !important;
+}
+
+/* باکس شیشه‌ای وضعیت خالی مکالمات */
+.premium-empty-inside-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 20px !important;
+  text-align: center !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+}
+
+/* 📱 فیکس قطعی و نجات از بیرون‌زدگی کادر در موبایل */
+@media (max-width: 992px) {
+  .premium-support-grid {
+    display: flex !important;
+    flex-direction: column !important; /* زیر هم آوردن فرم و مکالمات در گوشی */
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  .premium-support-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+  }
+
+  .premium-empty-inside-box {
+    padding: 30px 14px !important;
+  }
+}

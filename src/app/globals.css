@@ -17,6 +17,9 @@
 }
 
 * { box-sizing: border-box; }
+/* * {
+  border: 1px solid red !important;
+} */
 html { direction: ltr; color-scheme: dark; }
 body {
   margin: 0;
@@ -153,7 +156,21 @@ tr:last-child td { border-bottom: 0; }
 .progress-line input { width: 100%; }
 
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-.auth-panel { width: min(100%, 980px); display: grid; grid-template-columns: 1fr 1.2fr; border-radius: 32px; overflow: hidden; border: 1px solid var(--border); background: rgba(255,255,255,.05); box-shadow: var(--shadow); }
+
+.auth-panel {
+  width: min(100%, 980px) !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1.2fr !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  
+  /* اینجا گرادیانتِ نئونی رو می‌ذاریم روی کلِ پنل */
+  background: radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.4), transparent 50%),
+              radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.4), transparent 50%),
+              #050505 !important;
+}
+
 .player-premium-container {
   display: flex !important;
   align-items: center !important;
@@ -716,7 +733,11 @@ tr:last-child td { border-bottom: 0; }
   .player { grid-template-columns: 1fr; gap: 10px; }
   .player-side { justify-content: center; }
   .content { padding: 22px; }
-  .auth-panel { grid-template-columns: 1fr; }
+  .auth-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    background: radial-gradient(circle at top, rgba(124, 58, 237, 0.3), transparent 70%), #050505 !important;
+  }
   .auth-hero { min-height: auto; }
 }
 
@@ -1047,10 +1068,10 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 .premium-playlist-cover-container {
-  padding: 2px !important;
-  background: linear-gradient(135deg, #7c3aed, #22d3ee) !important;
+  padding: 0 !important; /* پدینگ رو صفر می‌کنیم تا رنگِ پشتش دیده نشه */
+  background: transparent !important; /* پس‌زمینه رو نامرئی می‌کنیم */
   border-radius: 16px !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important; /* فقط یه سایه نرم می‌ذاریم */
 }
 
 .premium-playlist-img {
@@ -1736,9 +1757,10 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 
 .premium-topbar {
   display: flex;
-  justify-content: flex-end; /* این خط المان‌ها را به سمت راست می‌برد */
-  align-items: center;
-  padding: 16px 30px;
+  
+  width: 100% !important;
+  align-items: center !important;
+  padding: 16px 30px !important;
   background: rgba(10, 10, 12, 0.7);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1746,6 +1768,12 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   position: relative;
   z-index: 1000;
 
+}
+
+.topbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 40px !important; /* فاصله بین دکمه لاگین و پروفایل */
 }
 
 /* اصلاح آواتار و یوزرپیل */
@@ -2140,7 +2168,7 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
 }
 
 .album-name-link {
-  color: rgba(255, 255, 255, 0.4); /* آلبوم یه ذره کمرنگ‌تر باشه که تفکیک بشه */
+  color: rgba(255, 255, 255, 0.4); 
 }
 
 .meta-separator {
@@ -2148,149 +2176,663 @@ html[dir="rtl"] .dashboard-menu-item.active { box-shadow: inset -3px 0 0 var(--p
   font-size: 10px;
 }
 
-/* فقط وقتی صفحه کوچیک شد (موبایل) نمایشش بده */
+
+.premium-gradient-hero {
+  /* تمام استایل‌های گرادیانتِ قبلی از اینجا حذف شد */
+  background: rgba(255, 255, 255, 0.03) !important; 
+  backdrop-filter: blur(10px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  
+  /* حفظِ چیدمان */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 60px !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+.hero-content-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  z-index: 2 !important;
+  position: relative !important;
+}
+
+/* استایل مخصوص لوگو و تایتل روی پس‌زمینه رنگی */
+.hero-logo {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.hero-logo .main-note, .hero-logo .wave-ring {
+  color: #ffffff !important;
+}
+
+.hero-title {
+  font-size: 4rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #fff !important;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2) !important;
+  margin: 0 !important;
+}
+
+/* 👥 باکس شیشه‌ای برای آواتارهای روی هم افتاده */
+.hero-community-box {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  margin-top: 40px !important;
+}
+
+.avatar-pile {
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 10px !important;
+}
+
+.avatar-pile img, .avatar-more {
+  width: 44px !important; /* کمی کوچک‌تر برای هماهنگی بیشتر */
+  height: 44px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(168, 85, 247, 0.5) !important; /* رنگ هماهنگ با تم */
+  object-fit: cover !important;
+  margin-right: -15px !important; /* همپوشانی مناسب */
+  background: #11111a !important;
+}
+
+.avatar-pile img {
+  filter: brightness(0.9); /* کمی عکس‌ها رو تیره کن که یکدست بشن */
+}
+
+/* افکت جذاب وقتی موس میره روی عکس هنرمندها */
+.avatar-pile img:hover {
+  transform: translateY(-8px) scale(1.1) !important;
+  z-index: 10 !important;
+  border-color: #22d3ee !important;
+}
+
+.avatar-more {
+  background: linear-gradient(135deg, #11111a, #1e1e2f) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  z-index: 5 !important;
+  margin-right: 0 !important;
+}
+
+.community-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.community-text strong {
+  color: #ffffff !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.community-text span {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px !important;
+}
+
+/* 📱 تنظیمات رسپانسیو برای موبایل */
+@media (max-width: 1080px) {
+  .premium-gradient-hero {
+    background: transparent !important; /* کلاً پس‌زمینه‌اش رو نامرئی کن */
+    border: none !important;           /* کادرش رو هم غیب کن */
+    backdrop-filter: none !important;  /* افکت شیشه‌ای رو هم بردار که روی گرادیانتِ اصلی اثر نذاره */
+    padding: 40px 20px 20px 20px !important;
+  }
+
+  .hero-community-box {
+    display: none !important;
+  }
+  .hero-title {
+    font-size: 2.2rem !important;
+  }
+  .hero-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+
 @media (max-width: 768px) {
-  .mobile-toggle-btn {
-    display: block;
+  .auth-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin-top: 20px !important;
+    margin-bottom: 30px !important;
+    width: 100% !important;
+  }
+
+  .brand-logo-box {
+    width: 64px !important;
+    height: 64px !important;
+    margin: 0 auto 16px auto !important;
+    position: static !important;
+    border-radius: 16px !important;
+  }
+
+  .auth-hero .page-title {
+    font-size: 2rem !important;
+    text-align: center !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .tabs {
+    display: flex !important;
+    flex-direction: row !important; 
+    gap: 4px !important;
+    padding: 6px !important;
+    width: 100% !important;
+  }
+
+  .tab {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 10px 4px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+}
+
+
+@media (max-width: 992px) {
+  
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
   }
   
-  .premium-topbar {
-    justify-content: space-between !important; /* توی موبایل دکمه میره چپ، پروفایل میره راست */
-    padding: 16px 20px;
-  }
-}
-
-/* انیمیشن باز شدن منو */
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ریسپانسیو برای موبایل */
-@media (max-width: 768px) {
   .premium-app-layout {
-    grid-template-columns: 1fr;
+    display: block !important;
+    width: 100vw !important;
+    overflow-x: hidden !important;
   }
-  
+
+  .content-area {
+    padding: 16px 12px !important;
+    padding-bottom: 130px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .premium-topbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-toggle-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    color: white !important;
+    z-index: 1000 !important;
+  }
+
   .sidebar {
-    display: none; /* در موبایل سایدبار رو کلاً مخفی کن و فقط از منوی همبرگری استفاده کن */
+    display: none !important;
   }
 
   .sidebar.mobile-show {
-    display: flex;
-    position: fixed;
-    width: 260px;
-    z-index: 1000;
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 260px !important;
+    z-index: 10000 !important;
+    background: rgba(10, 10, 12, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
   }
-}
-@media (max-width: 880px) {
-  .dashboard-stats { grid-template-columns: 1fr; }
-  .dashboard-content table { min-width: 620px; }
-}
 
-@media (max-width: 1080px) {
-  .dashboard-shell { grid-template-columns: 1fr; }
-  .dashboard-sidebar { position: static; }
-  .dashboard-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-@media (max-width: 680px) {
-  .dashboard-menu { grid-template-columns: 1fr; }
-}
-
-.mobile-only-expand {
-  display: none !important;
-}
-
-@media (max-width: 767px) {
-  .player:not(.mobile-expanded) .mobile-only-expand {
-    display: inline-flex !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .player.mobile-expanded {
+  .mobile-nav-backdrop {
+    display: block !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
-    height: 100dvh !important; 
-    background: linear-gradient(135deg, #120c1f 0%, #05030a 100%) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    padding: 30px 20px 40px 20px !important;
-    z-index: 99999 !important; 
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    z-index: 9999 !important;
+    cursor: pointer !important;
+  }
+
+  .premium-grid-albums, 
+  .premium-grid-playlists,
+  .premium-playlists-layout,
+  .grid.cols-2,
+  .grid.cols-3,
+  .grid.cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  
+  .premium-playlist-card {
+    padding: 10px !important;
+  }
+  
+  .premium-playlist-card img {
+    margin-bottom: 8px !important;
+    border-radius: 12px !important;
+  }
+
+  .premium-track-card {
+    padding: 10px 8px !important;
+    gap: 8px !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
-
-  .player.mobile-expanded .player-track {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 20px !important;
-    width: 100% !important;
-    margin-top: 50px !important;
+  
+  .track-left-section {
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+  
+  .track-cover-wrapper {
+    width: 42px !important;
+    height: 42px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .track-title {
+    font-size: 14px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
-  .player.mobile-expanded .player-cover {
-    width: 65vw !important;
-    max-width: 260px !important;
-    height: 65vw !important;
-    max-height: 260px !important;
-    border-radius: 16px !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
-    object-fit: cover !important;
+  .track-right-section {
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .analytics-pill {
+    font-size: 10px !important;
+    padding: 4px 6px !important;
+    margin-left: 0 !important;
   }
 
-  .player.mobile-expanded .close-mobile-player {
-    position: absolute !important;
-    top: 25px !important;
-    left: 20px !important;
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: none !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-  }
-
-  .player.mobile-expanded .player-controls {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 25px !important;
-    margin-top: auto !important;
-    margin-bottom: 20px !important;
-  }
-
-  .player.mobile-expanded .control-buttons {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding: 0 15px !important;
-    box-sizing: border-box !important;
-  }
-
-  .player.mobile-expanded .progress-line {
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
+  .premium-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
   }
 
-  .player.mobile-expanded .progress-line input[type="range"] {
-    flex: 1 !important;
+  .page-title, .premium-album-title {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    letter-spacing: normal !important;
+  }
+  
+  .section-title h2, .premium-section-title h2 {
+    font-size: 16px !important;
+  }
+  
+  .premium-card-title, .premium-playlist-title {
+    font-size: 13px !important;
   }
 
-  .player.mobile-expanded .player-side {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: space-around !important;
-    align-items: center !important;
-    gap: 10px !important;
+  .premium-card-subtitle, .track-meta, .premium-playlist-meta {
+    font-size: 11px !important;
+  }
+  
+  .premium-stat-card strong {
+    font-size: 18px !important;
+  }
+
+  .premium-nav-link {
+    font-size: 13px !important;
+    padding: 10px 12px !important;
   }
 }
 
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  /* ------------------------------------------- */
+  /* ۱. حالت جمع‌شده (مینی پلیر در پایین صفحه) */
+  /* ------------------------------------------- */
+  .player-premium-container:not(.mobile-expanded) {
+    bottom: 0 !important;
+    padding: 10px 16px !important;
+    height: auto !important;
+    min-height: 72px !important;
+    cursor: pointer !important;
+    border-radius: 20px 20px 0 0 !important;
+    gap: 12px !important;
+  }
+
+  /* 👈 قاتلِ بیرون‌زدگی: مخفی کردن مدال گلد، نوار پیشرفت و ولوم تو حالت مینی */
+  .player-premium-container:not(.mobile-expanded) .progress-line-premium,
+  .player-premium-container:not(.mobile-expanded) .player-side-premium,
+  .player-premium-container:not(.mobile-expanded) .gold-analytics-badge {
+    display: none !important; 
+  }
+
+  /* مهار کردن بخش اسم آهنگ تا دکمه پلی رو هل نده بیرون */
+  .player-premium-container:not(.mobile-expanded) .player-track-premium {
+    flex: 1 !important; /* کل فضای خالی رو میگیره */
+    min-width: 0 !important; /* اجازه میده متن‌های طولانی ... بشن */
+    margin: 0 !important;
+  }
+
+  /* فیت کردن عکس کاور */
+  .player-premium-container:not(.mobile-expanded) .player-cover-premium {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important; /* نمیذاره عکس له بشه */
+  }
+
+  /* مرتب کردن باکسِ دکمه پلی تا نچسبه به لبه گوشی */
+  .player-premium-container:not(.mobile-expanded) .player-controls-premium {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    max-width: none !important;
+  }
+
+  /* فقط دکمه وسطی (پلی/پاز) رو نشون بده */
+  .player-premium-container:not(.mobile-expanded) .control-buttons-premium .neon-control-btn:not(:nth-child(3)) {
+    display: none !important;
+  }
+  /* ------------------------------------------- */
+  /* ۲. حالت تمام‌صفحه (نجات از قفل شدن) */
+  /* ------------------------------------------- */
+  .player-premium-container.mobile-expanded {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    flex-direction: column !important;
+    justify-content: space-between !important; /* فاصله‌ها رو هوشمندانه پخش می‌کنه */
+    padding: 70px 24px 30px 24px !important;
+    background: linear-gradient(180deg, #160f24 0%, #050505 100%) !important;
+    z-index: 999999 !important;
+    overflow-y: auto !important; /* 👈 کلید نجات: اگه جا نشد حداقل بتونی اسکرول کنی! */
+  }
+
+  /* 🌟 دکمه خروج (بستن پلیر) که غیب شده بود */
+  .player-close-trigger, .close-mobile-player {
+    display: flex !important;
+    position: absolute !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: auto !important;
+    width: 44px !important;
+    height: 44px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 9999999 !important; /* میاد روی همه‌چیز تا حتماً بتونی بزنیش */
+  }
+
+  
+  .player-premium-container.mobile-expanded .player-track-premium {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    gap: 16px !important;
+    margin-top: 0 !important;
+  }
+
+  
+  .player-premium-container.mobile-expanded .player-cover-premium,
+  .player-premium-container.mobile-expanded .cover-wrapper-premium {
+    width: 100% !important;
+    max-width: 260px !important; 
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    border-radius: 20px !important;
+    margin: 0 auto !important;
+  }
+
+  .player-premium-container.mobile-expanded .player-controls-premium {
+    width: 100% !important;
+    margin-top: auto !important;
+    padding-top: 20px !important;
+    gap: 20px !important;
+  }
+
+  .player-premium-container.mobile-expanded .player-side-premium {
+    display: flex !important;
+    justify-content: space-around !important;
+    width: 100% !important;
+    margin-top: 10px !important;
+  }
+  
+}
+
+/* استفاده از پورتال‌های جهانی برای نمایش روی همه لایه‌ها */
+.lyrics-modal-class, 
+.add-to-playlist-popup-class {
+  z-index: 999999999 !important; /* یک لایه بالاتر از کلِ پلیر */
+  position: fixed !important;    /* برای اینکه از کانتینرهای پدرش جدا بشه و بره تو لایه root */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* پرده تاریک (بک‌دراپ) */
+.lyrics-backdrop,
+.modal-backdrop {
+  z-index: 999999998 !important; 
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* 🎵 صفِ پخش: لیستِ ضدِ شکستن (Unbreakable Line) */
+.queue-item {
+  display: flex !important;
+  flex-direction: row !important; /* اصرار داریم همه چی تو یک خط باشه */
+  align-items: center !important;
+  justify-content: space-between !important; /* عکس چپ، دکمه حذف راست */
+  padding: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* بخش اطلاعات آهنگ (اسم + زمان) */
+.queue-item-info {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 10px !important;
+  min-width: 0 !important; /* این حیاتیه که متن از کادر نزنه بیرون */
+}
+
+.queue-item-title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important; /* اگه اسم طولانی بود، سه نقطه میذاره */
+  font-size: 13px !important;
+}
+
+/* کوچک کردن مطلقِ دکمه حذف */
+.remove-btn {
+  flex-shrink: 0 !important; /* اجازه نمیدیم دکمه کوچیک بشه */
+  padding: 4px 6px !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+}
+
+
+/* ========================================= */
+/* 🎵 نجاتِ صف پخش (Queue) از به‌هم‌ریختگی روی موبایل */
+/* ========================================= */
+@media (max-width: 768px) {
+  /* ۱. لغو گرید ۲ ستونه و اجبار به یک خط افقی (Flex) */
+  .modal .track-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px !important;
+    width: 100% !important;
+  }
+
+  /* ۲. سایز عکس */
+  .modal .track-row img {
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ۳. مهار کردن اسم آهنگ (اضافه کردن سه نقطه) */
+  .modal .track-row > div {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .modal .track-row strong {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* ۴. فشرده و شیک کردن دکمه حذف */
+  .modal .track-row .btn.danger {
+    flex-shrink: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* ========================================= */
+/* 📱 تعمیر ظاهر مودال‌ها (لیریکس و صف) در موبایل */
+/* ========================================= */
+@media (max-width: 768px) {
+  /* ۱. برگرداندن ضربدر به روبروی عنوان (جلوگیری از رفتن به خط بعد) */
+  .modal .page-header {
+    flex-direction: row !important; 
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .modal .page-header h2 {
+    margin: 0 !important;
+    font-size: 22px !important;
+  }
+
+  /* ۲. استایل شیک، خوانا و هنری برای متن آهنگ (Lyrics) */
+  .modal p {
+    font-size: 14px !important;
+    line-height: 2.6 !important; /* فاصله خطوط بیشتر برای خوانایی */
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-align: center !important; /* وسط‌چین کردن متن مثل موزیک‌پلیرها */
+    max-height: 55vh !important; /* محدود کردن ارتفاع برای اسکرول شدن متن‌های طولانی */
+    overflow-y: auto !important; /* فعال کردن اسکرول نرم */
+    margin: 0 !important;
+    padding: 0 10px !important;
+  }
+  
+  /* خوشگل کردن نوار اسکرولِ لیریکس */
+  .modal p::-webkit-scrollbar {
+    width: 4px !important;
+  }
+  .modal p::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 4px !important;
+  }
+}
+
+/* کوچک کردنِ ظریفِ پنلِ لاگین */
+@media (max-width: 768px) {
+  /* کوچک کردن تایتلِ عظیمِ قبلی */
+  .hero-title {
+    font-size: 1.8rem !important; /* از 3.5 به 1.8 رسیدیم */
+    margin-bottom: 20px !important;
+  }
+
+  /* کوچک کردنِ تب‌ها (دکمه‌های لاگین/لیسنر/آرتیست) */
+  .tabs {
+    padding: 4px !important;
+    gap: 4px !important;
+  }
+  
+  .tab {
+    padding: 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* کوچک کردنِ فیلدها و دکمه‌ها */
+  .input {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .btn.primary.block {
+    padding: 10px !important;
+    font-size: 14px !important;
+    height: 40px !important;
+  }
+  
+  /* کم کردنِ فاصله داخلیِ پنل */
+  .auth-body {
+    padding: 20px !important;
+  }
+}
 
